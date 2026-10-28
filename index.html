@@ -300,6 +300,20 @@ body.paper .resline .kc,body.paper .resline .eq{border-top-color:#111}
 .w-qs{flex:1;display:flex;flex-direction:column}
 .w-q{flex:1;border-top:1px dashed #d0d0d0;padding-top:1.5mm;font-size:calc(11pt * var(--fs, 1));line-height:1.6}
 .w-qn{font-weight:700}
+/* わくの境目のつまみ（ドラッグで上下の書くスペースを調整。画面だけ） */
+.w-q,.ex-box,.qz-grid{position:relative}
+.spl{position:absolute;left:0;right:0;bottom:-12px;height:24px;cursor:row-resize;z-index:6;touch-action:none}
+.spl.wide{right:auto;width:200%}
+.spl.grid{bottom:auto}
+.spl::after{content:'';position:absolute;left:50%;top:50%;width:46px;height:8px;margin:-4px 0 0 -23px;border-radius:4px;background:#8fb3c9;opacity:.55;transition:opacity .15s}
+.spl:hover::after,.spl.drag::after{opacity:1;background:var(--blue,#2f6fb0)}
+.spl:hover::before,.spl.drag::before{content:'';position:absolute;left:0;right:0;top:50%;border-top:2px solid var(--blue,#2f6fb0)}
+/* 改ページのボタン（画面だけ） */
+.pbrk{position:absolute;left:8px;top:-13px;z-index:7;font:inherit;font-size:12px;line-height:1;padding:5px 10px;border-radius:999px;border:1px solid #9bb6cf;background:#fff;color:#2459d6;cursor:pointer}
+.pbrk:hover{background:#e5edff}
+.pbrk.undo{border-color:#e0a86b;color:#a35a12}
+.pbrk.undo:hover{background:#fdf0e1}
+@media print{.spl,.pbrk{display:none!important}}
 .wqa .wa{margin:1mm 0;line-height:1.55}
 .wa-l{display:inline-block;font-size:.78em;border:1px solid #999;border-radius:3px;padding:0 3px;margin-right:2mm;color:#444}
 .wqa .wtab{font-size:.9em;margin:1mm 0}
@@ -506,7 +520,8 @@ body.paper .resline .kc,body.paper .resline .eq{border-top-color:#111}
       <button data-mode="prop">比例式</button>
       <button data-mode="simul">連立方程式</button>
       <button data-mode="word">文章題</button>
-      <button data-mode="custom">自分で入力</button>
+      <!-- 「自分で入力」はタブには出さない（文章題の「練習画面で自分で解いてみる」から使う） -->
+      <button data-mode="custom" hidden>自分で入力</button>
       <button data-mode="print">プリント</button>
       <button data-mode="quiz">小テスト</button>
       <button data-mode="help">使い方</button>
@@ -663,7 +678,6 @@ body.paper .resline .kc,body.paper .resline .eq{border-top-color:#111}
         <li><b>加減法</b>：x の項・y の項・数の項が縦にそろって並びます。「①を □ 倍」で式全体（両辺のすべての項）を何倍かして、係数をそろえます。そろったら「①＋②」か「①−②」で、筆算のように合体して文字を消します。</li>
         <li><b>代入法</b>：一方の式を「y＝…」の形にすると、その右辺が点線のわくになります。わくをつかんで、もう一方の式の y の上にドラッグすると代入できます。かっこは自動でつくので、かっこのつけ忘れは起きません。</li>
         <li>1つの文字の値がわかったら、その値のカードを式の文字の上にドラッグして、もう一方の文字を求めます。</li>
-        <li>自分で入力するときは、2つの式を「,」で区切ります（例：2x+3y=7, x-y=1）。</li>
       </ul>
       <h2>設定</h2>
       <ul>
@@ -703,12 +717,6 @@ body.paper .resline .kc,body.paper .resline .eq{border-top-color:#111}
         <li>問題は1枚に6問（左右3問ずつ）で、書くスペースを小さくしないよう2枚に分けます（連立方程式だけのときは1枚4問）。1枚目に日付・氏名・得点欄があります。そのあとに途中式つきの解答・解説が続きます。</li>
         <li>「PDF を保存」でPDFファイルに、「LaTeX をコピー」「.tex を保存」でLaTeXのソースになります（LuaLaTeX でコンパイル）。</li>
       </ul>
-      <h2>自分で入力するとき</h2>
-      <ul>
-        <li>使える記号：数字、x、＋、−、×（* でも可）、÷（/ でも可）、かっこ、＝、：</li>
-        <li>かけ算の記号は省略できます（3x、2(x+1) など）。負の数をかけるときは 3×(-2) のようにかっこをつけます。</li>
-        <li>扱えるのは x の1次方程式です（x×x のような2次の式や、かっこの中のかっこは使えません）。</li>
-      </ul>
       <div class="ver" id="ver"></div>
     </div>
   </section>
@@ -723,9 +731,9 @@ body.paper .resline .kc,body.paper .resline .eq{border-top-color:#111}
 
 <script>
 'use strict';
-const VERSION = '1.17.1';
-const UPDATED = '2026-10-24';
-const CHANGES = '分数が小さく表示されないように、すべての数式を \displaystyle で表示（アプリ・プリント・小テスト・解答・LaTeX）。プリントの「問題の文字」を 小さめ／ふつう／大きめ から選べるように（くわしい設定。解答・解説の大きさは変えない）。プリント（計算）の「＝の点線」を あり／なし で選べるように（くわしい設定）。プリントの設定画面を整理：1 何を作る？ → 2 単元（学年）→ 3 種類 の手順式に。問題数・解答・文字の指定・文字の形は「くわしい設定」に折りたたみ。作りなおす・PDF・印刷のボタンは画面の下に固定。目安時間はプリントに印刷せず画面にだけ表示。実践・文章題の解答解説を1段組みに（文が折れないように）。実践プリント：問題数（5・10・15・20）を選べるように（入試形式・種類ごと両方）。1枚目に目安時間（1問ごとの目安の合計を5分単位）を表示。PDF を画像ではなく文字のまま保存するように変更（ブラウザの印刷の「PDF に保存」を使う。拡大してもくっきり）。プリント・小テスト共通。プリントに「PDF を保存」ボタンを追加（計算・文章題・実践の全分野。ファイル名はプリントのタイトル＋日付）。実践プリント：「中かっこ・累乗をふくむ計算」（例：−8×{−0.8÷(−4/5)²−(−3²)}）を4通りの形にふやし、種類ごと（中1 → 正負の数）でも選べるように。入試形式の中2問2にもまざる。実践プリントに「単項式の乗除（累乗・分数）」を追加（例：(−2xy²)³×5/6 x²y÷(−4/3 xy³)²）。入試形式の中2・中3にもまざる。実践プリントに「出し方：問題の種類ごと（10問）」を追加（学年 → 単元 → 種類）。サンプルから新しい型を追加：表と平均点から連立方程式、代表値（最頻値・中央値・範囲）、グラフと軸の交点、因数分解を使った式の値（x=3√2−4 など）、単項式のわり算をしてからの式の値、素数の確率、四角錐の高さ、(2x−5y)(3x+4y) の展開、−2y(2x−1)² の因数分解、√96−9√6、a²b×(−ab)³、反比例の比例定数。プリントに分野「実践（入試形式）」を追加：中1・中2・中3 を選ぶと、その学年までの内容から入試の小問集合と同じ並びで 問1〜問10 を自動作成（正負の数・分数の計算、文字式、方程式、連立方程式、等式変形、比例・反比例、1次関数、確率、展開・因数分解、平方根、2次方程式、関数 y=ax²、図形の計量）。解答は答えと短い解説。プリントの見出しを、タイトルの行と名前の行に分けた（タイトルが長いと名前欄がはみ出していたのを修正）。文字の指定「自分で置く」：「方程式をつくりなさい」の小問をやめ、求める問い（例：それぞれ何個買いましたか）を問題文の最後に入れる形に。文章題のプリント・小テスト：大問の番号を「問1」「問2」に（小問 (1)(2) と区別）。「文字の指定」を追加：問題に書く（やさしい）／自分で置く（むずかしい：何を x、y にするかも自分で決める）。文章題：問題文を画面の上に固定表示（ステップ1はその問題文の中の数をタップ）。タップできる場所の点線をなくした。文章題の学習ページを、各ステップで学習者が答える形に（数をタップ・求めるものを選ぶ・文字の決め方を選ぶ・表の空らんをうめる・式を選ぶ・答えを入力・最後の問いに答える）。文章題（大問）を追加：「文章題」タブで思考フロー（読む→求めるもの→文字→表→式を選ぶ→解く→確かめる）にそって学習。プリント（分野「文章題」）と小テスト（文章題（大問））にも対応。A＝B＝C の形は点線なしで表示。長い式（中かっこなど）が折り返さないように、文字の大きさと「＝」の位置を自動で調整。プリントを「単元 → 種類（やさしい順）」の選び方に整理。どの単元でも分数・小数・中かっこを選べるように。連立方程式に「比例式をふくむ」「A＝B＝C の形」を追加。小テストに1次不等式と新しい種類を追加。プリントもページ番号をフッターに。';
+const VERSION = '1.20.0';
+const UPDATED = '2026-10-29';
+const CHANGES = '大問の境目で改ページできるように（文章題プリント・小テストの文章題・実践プリント）。「ここで改ページ」で次の大問から新しいページへ、残ったわくは下まで広がる。「改ページを取り消す」で元にもどる。ボタンは印刷されない。プリント・小テストの問題ページで、わくの上下の境目をドラッグして書くスペースを調整できるように（ページごと。作りなおすと元にもどる。つまみは印刷されない）。○×の問題で、A・B の分数が重なるのを直した（行のすき間を広げた）。「自分で入力」タブをなくした（文章題の「練習画面で自分で解いてみる」からは今までどおり使える）。実践プリントの型を追加（サンプル3回目）：(a−b²)÷c−d²、−20−(−22)−9、{分数＋累乗}÷(−n)、小数より小さい整数、a正b負の性質、気温の差、分数×かっこ（1文字）、1.5x−(2x−1)/3、a²−9/a、数量の関係を等式で表す、分数係数の1次方程式、反比例の変域、傾きと1点から直線の式、数の選び方の確率、(2ab)³÷(−a²b)、分数の等式変形、√a〜√b の整数の個数、○×（循環小数・無理数）、半径が分数の球・おうぎ形の中心角・円柱の体積・半円のまわり。分数が小さく表示されないように、すべての数式を \displaystyle で表示（アプリ・プリント・小テスト・解答・LaTeX）。プリントの「問題の文字」を 小さめ／ふつう／大きめ から選べるように（くわしい設定。解答・解説の大きさは変えない）。プリント（計算）の「＝の点線」を あり／なし で選べるように（くわしい設定）。プリントの設定画面を整理：1 何を作る？ → 2 単元（学年）→ 3 種類 の手順式に。問題数・解答・文字の指定・文字の形は「くわしい設定」に折りたたみ。作りなおす・PDF・印刷のボタンは画面の下に固定。目安時間はプリントに印刷せず画面にだけ表示。実践・文章題の解答解説を1段組みに（文が折れないように）。実践プリント：問題数（5・10・15・20）を選べるように（入試形式・種類ごと両方）。1枚目に目安時間（1問ごとの目安の合計を5分単位）を表示。PDF を画像ではなく文字のまま保存するように変更（ブラウザの印刷の「PDF に保存」を使う。拡大してもくっきり）。プリント・小テスト共通。プリントに「PDF を保存」ボタンを追加（計算・文章題・実践の全分野。ファイル名はプリントのタイトル＋日付）。実践プリント：「中かっこ・累乗をふくむ計算」（例：−8×{−0.8÷(−4/5)²−(−3²)}）を4通りの形にふやし、種類ごと（中1 → 正負の数）でも選べるように。入試形式の中2問2にもまざる。実践プリントに「単項式の乗除（累乗・分数）」を追加（例：(−2xy²)³×5/6 x²y÷(−4/3 xy³)²）。入試形式の中2・中3にもまざる。実践プリントに「出し方：問題の種類ごと（10問）」を追加（学年 → 単元 → 種類）。サンプルから新しい型を追加：表と平均点から連立方程式、代表値（最頻値・中央値・範囲）、グラフと軸の交点、因数分解を使った式の値（x=3√2−4 など）、単項式のわり算をしてからの式の値、素数の確率、四角錐の高さ、(2x−5y)(3x+4y) の展開、−2y(2x−1)² の因数分解、√96−9√6、a²b×(−ab)³、反比例の比例定数。プリントに分野「実践（入試形式）」を追加：中1・中2・中3 を選ぶと、その学年までの内容から入試の小問集合と同じ並びで 問1〜問10 を自動作成（正負の数・分数の計算、文字式、方程式、連立方程式、等式変形、比例・反比例、1次関数、確率、展開・因数分解、平方根、2次方程式、関数 y=ax²、図形の計量）。解答は答えと短い解説。プリントの見出しを、タイトルの行と名前の行に分けた（タイトルが長いと名前欄がはみ出していたのを修正）。文字の指定「自分で置く」：「方程式をつくりなさい」の小問をやめ、求める問い（例：それぞれ何個買いましたか）を問題文の最後に入れる形に。文章題のプリント・小テスト：大問の番号を「問1」「問2」に（小問 (1)(2) と区別）。「文字の指定」を追加：問題に書く（やさしい）／自分で置く（むずかしい：何を x、y にするかも自分で決める）。文章題：問題文を画面の上に固定表示（ステップ1はその問題文の中の数をタップ）。タップできる場所の点線をなくした。文章題の学習ページを、各ステップで学習者が答える形に（数をタップ・求めるものを選ぶ・文字の決め方を選ぶ・表の空らんをうめる・式を選ぶ・答えを入力・最後の問いに答える）。文章題（大問）を追加：「文章題」タブで思考フロー（読む→求めるもの→文字→表→式を選ぶ→解く→確かめる）にそって学習。プリント（分野「文章題」）と小テスト（文章題（大問））にも対応。A＝B＝C の形は点線なしで表示。長い式（中かっこなど）が折り返さないように、文字の大きさと「＝」の位置を自動で調整。プリントを「単元 → 種類（やさしい順）」の選び方に整理。どの単元でも分数・小数・中かっこを選べるように。連立方程式に「比例式をふくむ」「A＝B＝C の形」を追加。小テストに1次不等式と新しい種類を追加。プリントもページ番号をフッターに。';
 
 /* =========================================================
    有理数
@@ -2194,7 +2202,7 @@ for (const [name, c] of Object.entries(SETTINGS)) {
    ========================================================= */
 // 問題の文字の大きさ（3段階）。解答・解説の大きさは変えない
 const FSCALE = { s: 0.88, m: 1, l: 1.15 };
-const PR = { field: 'calc', unit: 'eq', kind: 'basic', method: 'kasan', count: 6, ans: 'on', axis: 'on', fsize: 'm', wvar: 'given', grade: '3', emode: 'mix', etype: '', ecount: 10, items: [] };
+const PR = { field: 'calc', unit: 'eq', kind: 'basic', method: 'kasan', count: 6, ans: 'on', axis: 'on', fsize: 'm', wvar: 'given', grade: '3', emode: 'mix', etype: '', ecount: 10, items: [], breaks: new Set() };
 function prSeg(id, key, after){
   $(id).addEventListener('click', e => {
     const b = e.target.closest('button[data-v]');
@@ -2205,6 +2213,7 @@ function prSeg(id, key, after){
   });
 }
 function makeSheet(){
+  PR.breaks = new Set(); // 作りなおしたら改ページも元にもどす
   if (PR.field === 'exam') { PR.items = PR.emode === 'type' ? EXAM.genType(PR.grade, PR.etype, PR.ecount) : EXAM.gen(PR.grade, PR.ecount); return renderSheet(); }
   const seen = new Set();
   PR.items = [];
@@ -2300,6 +2309,100 @@ function addPageNumbers(box){
   const all = [...box.querySelectorAll('.sheet')];
   all.forEach((s, i) => s.insertAdjacentHTML('beforeend', `<div class="pgno">${i + 1} / ${all.length}</div>`));
 }
+// わくの上下の境目をドラッグして、書くスペースを調整する（問題ページのみ・ページごと）。
+// 上を広げた分だけ下がせまくなるので、紙の高さは変わらない。つまみは画面だけで、印刷には出ない
+const SPL_MIN = 20 * 3.7795, SPL_MIN_Q = 12 * 3.7795;
+// 大問のページ分け：1枚に per（重さの合計）まで。breaks にある番号の大問は、新しいページから始める。
+// 改ページで大問が減ったページは、空いた分までわくを下へ広げる（fill：わくの高さにかける倍率）
+function paginate(items, per, breaks, wt = () => 1){
+  const pages = []; let cur = [], used = 0;
+  // 自分で改ページしたページだけ広げる（最後のページなど、ふつうに余ったページは今までどおり）
+  const close = forced => { if (cur.length) { cur.fill = forced ? per / used : 1; pages.push(cur); } cur = []; used = 0; };
+  items.forEach((p, i) => { const w = wt(p); if (cur.length && breaks.has(i)) close(true); else if (cur.length && used + w > per) close(false); cur.push([p, i]); used += w; });
+  close(false);
+  return pages;
+}
+// 大問の境目に「ここで改ページ」、改ページした大問に「改ページを取り消す」のボタン（画面だけ。印刷には出ない）
+function addBreakButtons(box, sel, breaks, rerender){
+  let idx = 0;
+  box.querySelectorAll('.sheet:not(.ans)').forEach(sheet => {
+    sheet.querySelectorAll(sel).forEach((el, j) => {
+      const i = idx++;
+      if (!j && !breaks.has(i)) return;
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'pbrk' + (j ? '' : ' undo');
+      b.textContent = j ? 'ここで改ページ' : '改ページを取り消す';
+      b.addEventListener('click', () => { j ? breaks.add(i) : breaks.delete(i); rerender(); });
+      el.appendChild(b);
+    });
+  });
+}
+function addSplitters(box){
+  const mk = (host, pair, min, cls = '') => {
+    const d = document.createElement('div');
+    d.className = 'spl ' + cls;
+    host.appendChild(d);
+    d.addEventListener('pointerdown', e => {
+      e.preventDefault();
+      d.setPointerCapture(e.pointerId);
+      d.classList.add('drag');
+      const sheet = d.closest('.sheet'), sc = sheet.getBoundingClientRect().height / sheet.offsetHeight || 1;
+      const y0 = e.clientY, [a0, b0] = pair.get(), [ma, mb] = typeof min === 'function' ? min() : [min, min];
+      const move = ev => {
+        const dy = Math.max(Math.min(0, ma - a0), Math.min(Math.max(0, b0 - mb), (ev.clientY - y0) / sc));
+        pair.set(a0 + dy, b0 - dy);
+        pair.after && pair.after();
+      };
+      const up = () => { d.classList.remove('drag'); d.removeEventListener('pointermove', move); d.removeEventListener('pointerup', up); d.removeEventListener('pointercancel', up); };
+      d.addEventListener('pointermove', move); d.addEventListener('pointerup', up); d.addEventListener('pointercancel', up);
+    });
+    return d;
+  };
+  const hs = (els, px) => els.forEach(el => { el.style.height = px + 'px'; });
+  // 文の入ったわくは、文が隠れない高さより小さくしない
+  const MM = 3.7795;
+  const minW = w => w.querySelector('.w-text').offsetHeight + 5 * MM + w.querySelectorAll('.w-q').length * SPL_MIN_Q;
+  const textH = el => { const r = document.createRange(); r.selectNodeContents(el); return r.getBoundingClientRect().height / (el.closest('.sheet').getBoundingClientRect().height / el.closest('.sheet').offsetHeight || 1); };
+  const minX = x => Math.max(SPL_MIN, textH(x.querySelector('.ex-t')) + 8 * MM);
+  box.querySelectorAll('.sheet:not(.ans)').forEach(sheet => {
+    // 計算プリント：2列のわく。段（左右2つ）ごとに高さを変える
+    sheet.querySelectorAll('.sh-grid:not(.wgrid)').forEach(g => {
+      const bs = [...g.children].filter(b => b.classList.contains('sh-box'));
+      const rows = []; for (let i = 0; i < bs.length; i += 2) rows.push(bs.slice(i, i + 2));
+      for (let r = 0; r < rows.length - 1; r++) {
+        mk(rows[r][0], { get: () => [rows[r][0].offsetHeight, rows[r + 1][0].offsetHeight], set: (a, b) => { hs(rows[r], a); hs(rows[r + 1], b); }, after: () => fitSheetLines(sheet) }, SPL_MIN, 'wide');
+      }
+    });
+    // 小テストの計算：グリッドの段の高さを変える
+    sheet.querySelectorAll('.qz-grid').forEach(g => {
+      const m = /repeat\((\d+),\s*([\d.]+)mm\)/.exec(g.style.gridTemplateRows);
+      if (!m) return;
+      const hpx = Array(+m[1]).fill(+m[2] * 3.7795);
+      const put = () => { g.style.gridTemplateRows = hpx.map(v => v.toFixed(1) + 'px').join(' '); hand.forEach((d, r) => { d.style.top = (hpx.slice(0, r + 1).reduce((s, v) => s + v, 0) - 12) + 'px'; }); };
+      const hand = hpx.slice(1).map((_, r) => mk(g, { get: () => [hpx[r], hpx[r + 1]], set: (a, b) => { hpx[r] = a; hpx[r + 1] = b; put(); } }, SPL_MIN, 'grid'));
+      put();
+    });
+    // 文章題：大問どうしの境目、大問の中の小問どうしの境目
+    sheet.querySelectorAll('.sh-grid.wgrid').forEach(g => {
+      const ws = [...g.querySelectorAll('.wbox')];
+      for (let k = 0; k < ws.length - 1; k++) mk(ws[k], { get: () => [ws[k].offsetHeight, ws[k + 1].offsetHeight], set: (a, b) => { hs([ws[k]], a); hs([ws[k + 1]], b); } }, () => [minW(ws[k]), minW(ws[k + 1])]);
+    });
+    sheet.querySelectorAll('.w-qs').forEach(qs => {
+      const qq = [...qs.children].filter(x => x.classList.contains('w-q'));
+      // 高さを比で持つ（大問のわくの高さを変えても、小問の割合はそのまま）
+      for (let j = 0; j < qq.length - 1; j++) mk(qq[j], {
+        get: () => [qq[j].offsetHeight, qq[j + 1].offsetHeight],
+        set: (a, b) => { const hh = qq.map(x => x.offsetHeight); hh[j] = a; hh[j + 1] = b; qq.forEach((x, i) => { x.style.flex = `${hh[i].toFixed(1)} 1 0px`; }); }
+      }, SPL_MIN_Q);
+    });
+    // 実践プリント：問どうしの境目
+    sheet.querySelectorAll('.ex-list').forEach(g => {
+      const xs = [...g.children].filter(x => x.classList.contains('ex-box'));
+      for (let k = 0; k < xs.length - 1; k++) mk(xs[k], { get: () => [xs[k].offsetHeight, xs[k + 1].offsetHeight], set: (a, b) => { hs([xs[k]], a); hs([xs[k + 1]], b); } }, () => [minX(xs[k]), minX(xs[k + 1])]);
+    });
+  });
+}
 function sheetEq(e){
   if (e.kind === 'system') return `<div class="sh-sys">${BRACE}${e.eqs.map(sheetEq).join('')}</div>`;
   const l = e.kind === 'prop' ? `${partTex(e.A)}:${partTex(e.B)}` : exprTex(e.L);
@@ -2338,6 +2441,7 @@ function renderSheet(){
     layoutAnswers($('sheets'), es.map((p, i) => answerBlock(p.tex, p.steps, p.ans, i)), `解答・解説　${title.replace('途中式プリント　', '')}`);
   }
   addPageNumbers($('sheets'));
+  addSplitters($('sheets'));
   fitSheetLines($('sheets'));
   requestAnimationFrame(() => fitSheetLines($('sheets')));
 }
@@ -2345,33 +2449,33 @@ function renderSheet(){
 function renderExamSheet(){
   const title = `実践プリント　中${PR.grade}（${PR.emode === 'type' ? EXAM.typeName(PR.grade, PR.etype) : '入試形式'}）`;
   const head = t => `<div class="sh-title"><h2>${t}</h2><div class="sh-name">　月　日　　　年　　組　　番　名前 <span class="uline"></span></div></div>`;
-  const es = PR.items, per = 5, pages = [];
-  let cur = [], used = 0;
-  es.forEach((p, i) => { const w = p.w || 1; if (used + w > per) { pages.push(cur); cur = []; used = 0; } cur.push([p, i]); used += w; });
-  if (cur.length) pages.push(cur);
+  const es = PR.items, per = 5, pages = paginate(es, per, PR.breaks, p => p.w || 1);
   $('sheets').innerHTML = pages.map((pg, k) => {
-    const h = k ? 49 : 47;
+    const h = (k ? 49 : 47) * pg.fill;
     return `<div class="sheet qzp">${head(title)}${k ? '' : `<p class="sh-inst">次の問いに答えなさい。</p>`}
-      <div class="ex-list">${pg.map(([p, i]) => `<div class="ex-box" style="height:${h * (p.w || 1)}mm"><b class="exn">問${i + 1}</b><div class="ex-t">${rich(p.t)}${p.tb ? `<div class="ex-tb">${K(p.tb)}</div>` : ''}</div></div>`).join('')}</div></div>`;
+      <div class="ex-list">${pg.map(([p, i]) => `<div class="ex-box" style="height:${(h * (p.w || 1)).toFixed(1)}mm"><b class="exn">問${i + 1}</b><div class="ex-t">${rich(p.t)}${p.tb ? `<div class="ex-tb">${K(p.tb)}</div>` : ''}</div></div>`).join('')}</div></div>`;
   }).join('');
   // 目安時間はプリントには書かず、画面にだけ出す
   $('pStatus').textContent = `目安時間：約 ${EXAM.minutes(es)} 分（プリントには印刷されません）`;
   if (PR.ans === 'on') layoutAnswers($('sheets'), es.map((p, i) => `<div class="qa"><div class="qa-head"><b>問${i + 1}</b>　答　${rich(p.a)}</div><div class="ex-e">${rich(p.e)}</div></div>`), `解答・解説　${title.replace('実践プリント　', '')}`, true);
   addPageNumbers($('sheets'));
+  addSplitters($('sheets'));
+  addBreakButtons($('sheets'), '.ex-box', PR.breaks, renderSheet);
 }
 // 文章題プリント：1枚に大問2つ（小問ごとに書くスペースを同じだけとる）
 function renderWordSheet(){
   const kindName = PR.kind === 'mix' ? 'ミックス' : WORD[PR.unit].find(k => k[0] === PR.kind)[1];
   const title = `文章題プリント　${UNIT_NAME[PR.unit]}（${kindName}）`;
   const head = t => `<div class="sh-title"><h2>${t}</h2><div class="sh-name">　月　日　　　年　　組　　番　名前 <span class="uline"></span></div></div>`;
-  const es = PR.items, perPage = 2, h = 118;
-  const pages = [];
-  for (let k = 0; k < es.length; k += perPage) pages.push(es.slice(k, k + perPage));
+  const es = PR.items, h = 118;
+  const pages = paginate(es, 2, PR.breaks);
   $('sheets').innerHTML = pages.map((pg, k) => `<div class="sheet qzp">${head(title)}
     ${k ? '' : '<p class="sh-inst">次の問いに答えなさい。式や考え方も書きましょう。</p>'}
-    <div class="sh-grid wgrid">${pg.map((p, j) => wordBoxHTML(p, k * perPage + j, h, PR.wvar)).join('')}</div></div>`).join('');
+    <div class="sh-grid wgrid">${pg.map(([p, i]) => wordBoxHTML(p, i, h * pg.fill, PR.wvar)).join('')}</div></div>`).join('');
   if (PR.ans === 'on') layoutAnswers($('sheets'), es.map((p, i) => wordAnswerBlock(p, i, PR.wvar)), `解答・解説　${title.replace('文章題プリント　', '文章題　')}`, true);
   addPageNumbers($('sheets'));
+  addSplitters($('sheets'));
+  addBreakButtons($('sheets'), '.wbox', PR.breaks, renderSheet);
 }
 $('pField').addEventListener('click', e => {
   const b = e.target.closest('button[data-v]');
@@ -3529,7 +3633,7 @@ const wordAnswerBlock = (p, i, mode) => `<div class="qa wqa"><div class="qa-head
   <div class="wa wa-ans">${(f => f.ans.map((x, j) => qnum(f, j) + rich(x.a)).join('<br>'))(wordForm(p, mode))}</div>
   <div class="wa wa-chk">確かめ：${rich(p.check)}</div></div>`;
 const shuffle = a => { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
-const QZ = { units: ['eq'], level: 'mix', wvar: 'given', probs: [] };
+const QZ = { units: ['eq'], level: 'mix', wvar: 'given', probs: [], breaks: new Set() };
 const UNIT_NAME = { eq: '1次方程式', prop: '比例式', sys: '連立方程式', ineq: '1次不等式', word: '文章題' };
 const LEVEL_NAME = { 1: 'レベル1', 2: 'レベル2', 3: 'レベル3', mix: '段階的ミックス' };
 // 文章題をふくめるとき：計算と合わせるなら 計算8問＋大問2つ、文章題だけなら大問4つ
@@ -3566,6 +3670,7 @@ function makeQuiz(){
     return null;
   }).filter(Boolean);
   QZ.probs = calc.concat(words);
+  QZ.breaks = new Set();
   renderQuiz();
 }
 const ansTex = a => a.tex ? a.tex : a.y !== undefined ? `(x,\\ y)=(${qtex(a.x)},\\ ${qtex(a.y)})` : `x=${qtex(a.x)}`;
@@ -3596,10 +3701,10 @@ function renderQuiz(){
     return `<div class="sheet qz">${head(quizTitle(), !k)}${k ? '' : `<p class="qz-inst">${quizInst()}　途中式は「＝」をそろえて書きましょう。</p>`}<div class="qz-grid" style="grid-template-rows:repeat(${rows},${h}mm)">${cells}</div></div>`;
   }).join('');
   // 文章題（大問）は、計算のあとに1枚2問で
-  for (let k = 0; k < words.length; k += 2) {
+  paginate(words, 2, QZ.breaks).forEach((pg, k) => {
     const first = !calc.length && !k;
-    html += `<div class="sheet qz">${head(quizTitle(), first)}${first ? `<p class="qz-inst">${quizInst()}</p>` : ''}<div class="sh-grid wgrid">${words.slice(k, k + 2).map((p, j) => wordBoxHTML(p, k + j, first ? 112 : 118, QZ.wvar)).join('')}</div></div>`;
-  }
+    html += `<div class="sheet qz">${head(quizTitle(), first)}${first ? `<p class="qz-inst">${quizInst()}</p>` : ''}<div class="sh-grid wgrid">${pg.map(([p, i]) => wordBoxHTML(p, i, (first ? 112 : 118) * pg.fill, QZ.wvar)).join('')}</div></div>`;
+  });
   const blocks = QZ.probs.map((p, i) => p.unit === 'word' ? wordAnswerBlock(p, i - calc.length, QZ.wvar) : answerBlock(p.tex, p.steps, p.ans, i));
   $('quizSheets').innerHTML = html;
   fitQuizCells($('quizSheets'));
@@ -3608,6 +3713,8 @@ function renderQuiz(){
   // フッターにページ番号
   const all = [...$('quizSheets').querySelectorAll('.sheet')];
   all.forEach((s, i) => s.insertAdjacentHTML('beforeend', `<div class="pgno">${i + 1} / ${all.length}</div>`));
+  addSplitters($('quizSheets'));
+  addBreakButtons($('quizSheets'), '.wbox', QZ.breaks, renderQuiz);
 }
 const answerBlock = (tex, steps, ans, i) => `<div class="qa"><div class="qa-head"><b>(${i + 1})</b>　${K(tex)}</div>${stepsHTML(steps)}<div class="qa-ans">答　${K(ansTex(ans))}</div></div>`;
 // 解答解説：まず1枚に収まるよう文字を小さくする（7.5pt まで）。
@@ -4566,23 +4673,244 @@ const EXAM = (() => {
         : `（最大値）−（最小値）：${M(`${sd[n - 1]}-${sd[0]}=${ans}`)}` };
   }
 
+  /* ---------- サンプル追加（2回目） ---------- */
+  // 加減だけの正負の数／かけ算とわり算が負の数2つ
+  function exIntB(){
+    if (Math.random() < 0.5) {
+      const a = ri(2, 30), b = ri(2, 30), c = ri(2, 15), v = -a + b - c;
+      return { t: `${M(`-${a}-(-${b})-${c}`)} を計算しなさい。`, a: M(v), e: `ひく数の符号を変えて、たし算になおす：${M(`-${a}+${b}-${c}=${v}`)}` };
+    }
+    const c = ri(2, 6), b = ri(2, 9), a = c * ri(1, 6);
+    if (a === 1) return null;
+    const v = a * b / c;
+    return { t: `${M(`${a}\\times(-${b})\\div(-${c})`)} を計算しなさい。`, a: M(v), e: `負の数が2つなので、答えの符号は＋。${M(`${a}\\times ${b}\\div ${c}=${v}`)}` };
+  }
+  // (a−b²)÷c−d² ／ (a−b²)÷(分数)
+  function exPowB(){
+    if (Math.random() < 0.5) {
+      const b = ri(2, 7), c = ri(2, 9), d = ri(2, 7), a = ri(1, 20), t = a - b * b;
+      if (t % c) return null;
+      const v = t / c - d * d;
+      return { t: `${M(`(${a}-${b}^2)\\div ${c}-${d}^2`)} を計算しなさい。`, a: M(v),
+        e: `${M(`${b}^2=${b * b}`)} なので、かっこの中は ${M(t)}。${M(`${t}\\div ${c}=${t / c}`)}、${M(`${t / c}-${d * d}=${v}`)}` };
+    }
+    const b = ri(2, 6), a = ri(1, 30), t = a - b * b, P = rfrac([2, 3, 4, 5]).add(q(ri(0, 4)));
+    if (!t) return null;
+    const v = q(t).div(P);
+    if (v.d > 9) return null;
+    return { t: `${D(`(${a}-${b}^2)\\div ${qtex(P)}`)} を計算しなさい。`, a: D(qtex(v)),
+      e: `かっこの中は ${M(`${a}-${b * b}=${t}`)}。わる数の逆数をかける：${D(`${t}\\times ${qtex(q(P.d, P.n))}=${qtex(v)}`)}` };
+  }
+  // {a/b+(−c/d)²−(−e/f)²}÷(−n)
+  function exFracHard2(){
+    const A = rfrac([2, 3, 4, 5, 6]), C = rfrac([2, 3, 4, 5, 6]), E = rfrac([2, 3, 4]), n = ri(2, 6);
+    const inner = A.add(C.mul(C)).sub(E.mul(E)), v = inner.div(q(-n));
+    if (inner.isZero() || v.d > 24) return null;
+    return { t: `${D(`\\left\\{${qtex(A)}+\\left(-${qtex(C)}\\right)^2-\\left(-${qtex(E)}\\right)^2\\right\\}\\div(-${n})`)} を計算しなさい。`, a: D(qtex(v)),
+      e: `${D(`\\left(-${qtex(C)}\\right)^2=${qtex(C.mul(C))}`)}、${D(`\\left(-${qtex(E)}\\right)^2=${qtex(E.mul(E))}`)}。中かっこの中は ${D(qtex(inner))}` };
+  }
+  // −1.6 より小さい整数のうち、もっとも大きい数
+  function exOrderInt(){
+    let t; do { t = nz(-59, 59); } while (t % 10 === 0);
+    const T = q(t, 10), big = Math.random() < 0.5, v = big ? Math.ceil(t / 10) - 1 : Math.floor(t / 10) + 1;
+    return { t: `${M(dstr(T))} より${big ? '小さい' : '大きい'}整数のうち、もっとも${big ? '大きい' : '小さい'}数を求めなさい。`, a: M(v),
+      e: `数直線で考える。${M(dstr(T))} のすぐ${big ? '左' : '右'}にある整数は ${M(v)}` };
+  }
+  // a は正、b は負のとき、常に負（正）になるもの
+  function exSignQ(){
+    const pool = [['a+b', (a, b) => a + b], ['a-b', (a, b) => a - b], ['b-a', (a, b) => b - a], ['a\\times b', (a, b) => a * b], ['a\\div b', (a, b) => a / b],
+      ['b^2', (a, b) => b * b], ['-b', (a, b) => -b], ['b-a^2', (a, b) => b - a * a], ['-a\\times b', (a, b) => -a * b], ['b^3', (a, b) => b ** 3], ['a^2+b', (a, b) => a * a + b], ['(a-b)\\times b', (a, b) => (a - b) * b]];
+    const sel = shuffle([...pool]).slice(0, 4), neg = Math.random() < 0.6;
+    const kind = sel.map(([, f]) => { let p = 0, n = 0; for (let i = 0; i < 300; i++) { const v = f(Math.random() * 10 + 0.01, -(Math.random() * 10 + 0.01)); if (v > 0) p++; else if (v < 0) n++; } return n === 300 ? 'neg' : p === 300 ? 'pos' : 'any'; });
+    const ans = kind.map((k, i) => k === (neg ? 'neg' : 'pos') ? i + 1 : 0).filter(Boolean);
+    if (!ans.length) return null;
+    const tb = sel.map(([s], i) => `\\mathbf{${i + 1}}\\ \\ ${s}`).join('\\qquad\\quad ');
+    return { t: `${M('a')} は正の数、${M('b')} は負の数であるとする。計算した値が常に${neg ? '負' : '正'}の数であるものを、次の 1〜4 のうちからすべて選んで、番号で答えなさい。`, tb,
+      a: ans.join('、'), e: sel.map(([s], i) => `${M(s)}：${{ neg: '常に負', pos: '常に正', any: '正にも負にもなる' }[kind[i]]}`).join('、') };
+  }
+  // 気温の差（小数の加減）
+  function exTemp(){
+    const A = q(ri(-60, 90), 10), d1 = q(ri(11, 79), 10), d2 = q(ri(11, 49), 10), d3 = q(ri(51, 149), 10);
+    if (A.isInt() || d1.isInt() || d2.isInt() || d3.isInt()) return null;
+    const B = A.sub(d1), C = B.add(d2), Dd = A.sub(d3), df = C.sub(Dd);
+    if (df.isZero()) return null;
+    const tm = v => `${dstr(v)}\\ ℃`;
+    return { t: `4つの地点 A、B、C、D における、ある年の最低気温の記録を調べた。A 地点の最低気温は ${M(tm(A))} で、B 地点の最低気温より ${M(tm(d1))} 高く、B 地点の最低気温は C 地点の最低気温より ${M(tm(d2))} 低く、D 地点の最低気温は A 地点の最低気温より ${M(tm(d3))} 低い。このとき、C 地点の最低気温は D 地点の最低気温に比べて何 ℃ 高いか、もしくは低いか求めなさい。`,
+      a: `${M(tm(df.abs()))} ${df.sgn() > 0 ? '高い' : '低い'}`,
+      e: `B は ${M(tm(B))}、C は ${M(tm(C))}、D は ${M(tm(Dd))}。${M(`${dstr(C)}-(${dstr(Dd)})=${dstr(df)}`)}` };
+  }
+  // 分数×かっこの式（文字1つ）
+  function exFracDist1(){
+    const A = rfrac([2, 3, 4, 6]), B = rfrac([2, 3, 4, 6]).mul(pm1());
+    const i1 = [[ri(1, 4), 'x'], [nz(-6, 6), '']], i2 = [[ri(1, 4), 'x'], [nz(-6, 6), '']];
+    if (A.d === B.d || g2(i1) > 1 || g2(i2) > 1) return null;
+    const P = Poly.of(i1).mul(A).add(Poly.of(i2).mul(B));
+    if (P.terms().length < 2) return null;
+    const L = P.terms().reduce((l, t) => lcm(l, t.c.d), 1), N = P.mul(q(L));
+    return { t: `${D(`${qtex(A)}(${ltex(i1)})${B.sgn() < 0 ? '-' : '+'}${qtex(B.abs())}(${ltex(i2)})`)} を計算しなさい。`,
+      a: D(P.tex()) + (L > 1 ? `（${D(`\\frac{${N.tex()}}{${L}}`)} でもよい）` : ''), e: `分配法則でかっこをはずしてから、同類項をまとめる。` };
+  }
+  // 1.5x − (2x−1)/3
+  function exDecFrac(){
+    let t; do { t = ri(2, 35); } while (t % 10 === 0);
+    const T = q(t, 10), r = pick([2, 3, 4, 6]), n = [[ri(1, 5), 'x'], [nz(-7, 7), '']];
+    if (g2(n) > 1) return null;
+    const op = pick([1, -1]), P = Poly.of([[T, 'x']]).add(Poly.of(n).mul(q(1, r)), op);
+    if (P.terms().length < 2) return null;
+    let L = P.terms().reduce((l, x) => lcm(l, x.c.d), 1), N = P.mul(q(L));
+    return { t: `${D(`${dstr(T)}x${op > 0 ? '+' : '-'}\\frac{${ltex(n)}}{${r}}`)} を計算しなさい。`, a: D(L > 1 ? `\\frac{${N.tex()}}{${L}}` : P.tex()),
+      e: `小数を分数になおす：${M(`${dstr(T)}=${qtex(T)}`)}。分母を ${L} にそろえて計算する。` };
+  }
+  // a=−3 のとき a²−9/a
+  function exVal1b(){
+    const k = ri(2, 6), P = k * ri(1, 5) * pick([1, -1]), v = q(k * k).add(q(P, k));
+    return { t: `${M(`a=-${k}`)} のとき、${D(`a^2${P < 0 ? '+' : '-'}\\frac{${Math.abs(P)}}{a}`)} の値を求めなさい。`, a: M(qtex(v)),
+      e: `${D(`(-${k})^2${P < 0 ? '+' : '-'}\\frac{${Math.abs(P)}}{-${k}}=${k * k}${P / k < 0 ? '' : '+'}${qtex(q(P, k))}`)}` };
+  }
+  // 数量の関係を等式で表す
+  function exRel(){
+    const f = ri(0, 3);
+    if (f === 0) {
+      const k = ri(1, 9), up = Math.random() < 0.5;
+      return { t: `2つの数 ${M('a')}、${M('b')} の平均が ${M('c')} よりも ${k} だけ${up ? '大きい' : '小さい'}とき、これらの数量の間の関係を等式で表しなさい。`, a: D(`\\frac{a+b}{2}=c${up ? '+' : '-'}${k}`),
+        e: `（平均）＝（合計）÷（個数）なので、平均は ${D('\\frac{a+b}{2}')}` };
+    }
+    if (f === 1) {
+      const n = ri(2, 9), m = ri(2, 9);
+      return { t: `1個 ${M('a')} 円のりんごを ${n} 個と、1個 ${M('b')} 円のみかんを ${m} 個買ったときの代金の合計は ${M('c')} 円だった。これらの数量の間の関係を等式で表しなさい。`, a: M(`${n}a+${m}b=c`),
+        e: `（1個の値段）×（個数）を合計する。` };
+    }
+    if (f === 2) {
+      const n = ri(3, 8), m = ri(1, n - 1);
+      return { t: `${M('a')} 枚の色紙を、1人に ${n} 枚ずつ ${M('b')} 人に配ったところ、${m} 枚余った。これらの数量の間の関係を等式で表しなさい。`, a: M(`a=${n}b+${m}`),
+        e: `（全部の枚数）＝（配った枚数）＋（余り）。配った枚数は ${M(`${n}b`)} 枚。` };
+    }
+    return { t: `${M('x')} km の道のりを、時速 ${M('y')} km で歩いたら、${M('z')} 時間かかった。これらの数量の間の関係を等式で表しなさい。`, a: D('\\frac{x}{y}=z'),
+      e: `（時間）＝（道のり）÷（速さ）` };
+  }
+  // 2x−5=1/4 x+9
+  function exEqFrac(){
+    const P = rfrac([2, 3, 4, 5]).mul(pm1()), x = P.d * nz(-4, 4), a = nz(-6, 6), b = nz(-9, 9);
+    if (P.eq(q(a))) return null;
+    const c = q(a * x + b).sub(P.mul(q(x)));
+    if (c.isZero() || !c.isInt()) return null;
+    return { t: `1次方程式 ${D(`${ltex([[a, 'x'], [b, '']])}=${Poly.of([[P, 'x'], [c, '']]).tex()}`)} を解きなさい。`, a: M(`x=${x}`),
+      e: `両辺に ${P.d} をかけて分母をはらう：${M(`${ltex([[a * P.d, 'x'], [b * P.d, '']])}=${ltex([[P.n, 'x'], [c.n * P.d, '']])}`)}` };
+  }
+  // 反比例の変域
+  function exInvRange(){
+    const k = nz(-6, 6) * ri(2, 6), ds = divs(Math.abs(k)).filter(d => d > 1 && d < Math.abs(k));
+    if (ds.length < 2) return null;
+    const [p, r] = shuffle([...ds]).slice(0, 2).sort((a, b) => a - b), xs = Math.random() < 0.5 ? [p, r] : [-r, -p];
+    const ys = xs.map(x => q(k, x)), up = ys[0].sub(ys[1]).sgn() < 0, lo = up ? ys[0] : ys[1], hi = up ? ys[1] : ys[0];
+    const fr = k < 0 ? `-\\frac{${-k}}{x}` : `\\frac{${k}}{x}`;
+    return { t: `反比例 ${D(`y=${fr}`)} において、${M('x')} の変域が ${M(`${xs[0]}\\leqq x\\leqq ${xs[1]}`)} であるときの ${M('y')} の変域を求めなさい。`, a: M(`${qtex(lo)}\\leqq y\\leqq ${qtex(hi)}`),
+      e: `${M(`x=${xs[0]}`)} のとき ${M(`y=${qtex(ys[0])}`)}、${M(`x=${xs[1]}`)} のとき ${M(`y=${qtex(ys[1])}`)}。小さい方から書く。` };
+  }
+  // 傾きと1点から直線の式
+  function exLinePt(){
+    const k = Math.random() < 0.5 ? q(nz(-5, 5)) : rfrac([2, 3, 4, 6]).mul(pm1()), x = k.d * nz(-3, 3), y = nz(-9, 9), b = q(y).sub(k.mul(q(x)));
+    return { t: `座標平面上において、傾きが ${D(qtex(k))} で点 ${M(`(${x},\\ ${y})`)} を通る直線の式を求めなさい。`, a: D(`y=${Poly.of([[k, 'x'], [b, '']]).tex()}`),
+      e: `${M(`y=${Poly.of([[k, 'x']]).tex()}+b`)} に ${M(`x=${x},\\ y=${y}`)} を代入して ${M(`b=${qtex(b)}`)}` };
+  }
+  // いくつかの数から異なる2個を選ぶ確率
+  function exProbSet(){
+    const n = pick([4, 5]), ns = shuffle([1, 2, 3, 4, 5, 6, 7, 8, 9]).slice(0, n).sort((a, b) => a - b), th = ri(6, 14);
+    const ev = pick([[`和が ${th} 未満`, (a, b) => a + b < th], ['和が偶数', (a, b) => (a + b) % 2 === 0], ['積が奇数', (a, b) => (a * b) % 2 === 1], ['和が 3 の倍数', (a, b) => (a + b) % 3 === 0]]);
+    let tot = 0, c = 0;
+    for (let i = 0; i < n; i++) for (let j = i + 1; j < n; j++) { tot++; if (ev[1](ns[i], ns[j])) c++; }
+    if (!c || c === tot) return null;
+    const v = q(c, tot);
+    return { t: `${n}つの数 ${ns.join('、')} から異なる2個の数を選ぶとき、選んだ2個の数の${ev[0]}である確率を求めなさい。ただし、${n}つの数からどの数を選ぶことも同様に確からしいものとする。`, a: D(qtex(v)),
+      e: `選び方は全部で ${tot} 通り、そのうちあてはまるのは ${c} 通り。` };
+  }
+  // (2ab)³÷(−a²b)
+  function exMonoC(){
+    const A = Poly.of([[pick([2, 3, -2, -3]), { a: ri(1, 2), b: ri(1, 2) }]]), B = Poly.of([[pick([1, -1, 2, -2, 3, -3, 4, -4, 6, -6]), { a: ri(1, 3), b: ri(0, 2) }]]);
+    const R = divMono(A.pow(3), B);
+    if (!R || !R.terms()[0].c.isInt()) return null;
+    return { t: `${M(`(${A.tex()})^3\\div ${mt(B)}`)} を計算しなさい。`, a: M(R.tex()), e: `${M(`(${A.tex()})^3=${A.pow(3).tex()}`)}。分数の形にして約分する。` };
+  }
+  // 6t/7 − 2s/5 = 1 を s について
+  function exSolveFrac(){
+    const a = ri(1, 7), p = ri(2, 9), b = ri(1, 5), r = ri(2, 9), c = nz(-5, 5);
+    if (gcd(a, p) > 1 || gcd(b, r) > 1 || p === r) return null;
+    let n1 = r * a, n0 = -p * r * c, den = p * b;
+    const g = gcd(gcd(n1, n0), den); n1 /= g; n0 /= g; den /= g;
+    const num = ltex([[n1, 't'], [n0, '']]);
+    return { t: `${D(`\\frac{${a === 1 ? '' : a}t}{${p}}-\\frac{${b === 1 ? '' : b}s}{${r}}=${c}`)} を ${M('s')} について解きなさい。`, a: D(`s=${den === 1 ? num : `\\frac{${num}}{${den}}`}`),
+      e: `${D(`\\frac{${b === 1 ? '' : b}s}{${r}}=\\frac{${a === 1 ? '' : a}t}{${p}}${c < 0 ? '+' : '-'}${Math.abs(c)}`)} として、両辺に ${D(`\\frac{${r}}{${b}}`)} をかける。` };
+  }
+  // √a より大きく √b より小さい整数の個数
+  function exSqrtCnt(){
+    const a = ri(2, 60), b = ri(a + 30, 500);
+    if (Number.isInteger(Math.sqrt(a)) || Number.isInteger(Math.sqrt(b))) return null;
+    const lo = Math.floor(Math.sqrt(a)) + 1, hi = Math.ceil(Math.sqrt(b)) - 1;
+    return { t: `${M(`\\sqrt{${a}}`)} より大きく、${M(`\\sqrt{${b}}`)} より小さい整数は全部で何個ありますか。`, a: `${hi - lo + 1} 個`,
+      e: `${M(`${lo - 1}^2=${(lo - 1) ** 2}<${a}<${lo}^2=${lo * lo}`)}、${M(`${hi}^2=${hi * hi}<${b}<${hi + 1}^2=${(hi + 1) ** 2}`)}。${M(lo)} から ${M(hi)} まで。` };
+  }
+  // ○×の組み合わせ（循環小数・無理数）
+  function exTF(){
+    const n = ri(3, 16), recur = n => { let m = n; while (m % 2 === 0) m /= 2; while (m % 5 === 0) m /= 5; return m > 1; };
+    const sq = v => Number.isInteger(Math.sqrt(v));
+    const rat = Math.random() < 0.5, k = ri(1, 3) * pick([1, 2]);
+    let a, b; if (rat) { a = ri(1, 6) ** 2; b = ri(2, 8) ** 2; } else { a = pick([2, 3, 5, 6, 7]) * ri(1, 3) ** 2; b = ri(2, 6) ** 2; }
+    const p = a * k, r = b * k, g = gcd(p, r);
+    if (p === r) return null;
+    const tA = recur(n), tB = !(sq(p / g) && sq(r / g));
+    const sts = [[`\\frac{1}{${n}}\\text{ を小数で表すと、循環小数になる。}`, tA,`${n} を素因数分解すると 2 と 5 以外の素因数が${tA ? 'ある' : 'ない'}ので、${tA ? '循環小数' : '割り切れる小数（有限小数）'}。`],
+      [`\\sqrt{\\frac{${p}}{${r}}}\\text{ は無理数である。}`, tB,`${D(`\\frac{${p}}{${r}}=\\frac{${p / g}}{${r / g}}`)}。${tB ? '分子か分母が平方数でないので無理数。' : `${D(`\\sqrt{\\frac{${p / g}}{${r / g}}}=\\frac{${Math.sqrt(p / g)}}{${Math.sqrt(r / g)}}`)} で有理数。`}`]];
+    if (Math.random() < 0.5) sts.reverse();
+    const no = sts[0][1] ? (sts[1][1] ? 1 : 2) : (sts[1][1] ? 3 : 4);
+    return { t: `以下の A、B について、正しいものを ○、正しくないものを × で表すとき、その組み合わせとして適切なものを、次の 1〜4 のうちから1つ選びなさい。`, w: 1.5,
+      tb: `\\begin{array}{l}\\text{A：}\\displaystyle ${sts[0][0]}\\\\[4mm]\\text{B：}\\displaystyle ${sts[1][0]}\\\\[5mm]\\mathbf{1}\\ \\ \\text{A ○　B ○}\\qquad\\mathbf{2}\\ \\ \\text{A ○　B ×}\\qquad\\mathbf{3}\\ \\ \\text{A ×　B ○}\\qquad\\mathbf{4}\\ \\ \\text{A ×　B ×}\\end{array}`,
+      a: `${no}`, e: `A：${sts[0][2]}　B：${sts[1][2]}` };
+  }
+  // 図形の計量（追加）
+  function exFigB(){
+    const f = ri(0, 3), cm = n => `${n}\\ \\mathrm{cm}`;
+    if (f === 0) {
+      const p = pick([1, 3, 5, 7]), v = q(p ** 3, 6);
+      return { t: `半径が ${D(`\\frac{${p}}{2}`)} cm の球の体積を求めなさい。ただし、円周率は ${M('\\pi')} とする。`, a: M(`${qtex(v)}\\pi\\ \\mathrm{cm}^3`),
+        e: `${D(`\\frac{4}{3}\\pi\\times\\left(\\frac{${p}}{2}\\right)^3=${qtex(v)}\\pi`)}` };
+    }
+    if (f === 1) {
+      const r = ri(2, 9), th = pick([30, 40, 45, 60, 72, 90, 105, 120, 135, 150, 210, 240]), L = q(2 * r * th, 360);
+      if (L.d > 2) return null;
+      return { t: `半径が ${M(cm(r))}、弧の長さが ${M(`${qtex(L)}\\pi\\ \\mathrm{cm}`)} のおうぎ形の中心角の大きさを求めなさい。ただし、${M('\\pi')} は円周率である。`, a: M(`${th}^\\circ`),
+        e: `${D(`2\\pi\\times ${r}\\times\\frac{x}{360}=${qtex(L)}\\pi`)} より ${M(`x=${th}`)}` };
+    }
+    if (f === 2) {
+      const r = ri(2, 9), h = ri(2, 12);
+      return { t: `底面の円の半径が ${M(cm(r))} で、高さが ${M(cm(h))} の円柱の体積を求めなさい。ただし、円周率は ${M('\\pi')} とする。`, a: M(`${r * r * h}\\pi\\ \\mathrm{cm}^3`),
+        e: `（底面積）×（高さ）：${M(`\\pi\\times ${r}^2\\times ${h}=${r * r * h}\\pi`)}` };
+    }
+    const d = 2 * ri(1, 10), v = q(257 * d, 100);
+    return { t: `直径が ${M(cm(d))} の半円のまわりの長さを求めなさい。ただし、円周率は ${M('3.14')} とする。`, a: M(`${dstr(v)}\\ \\mathrm{cm}`),
+      e: `曲線の部分は ${M(`3.14\\times ${d}\\div 2=${dstr(q(157 * d, 100))}`)}、直径の ${M(d)} をたす。` };
+  }
+
   // 引数つきの型に名前をつける（目安時間の表と、入試形式・種類ごとの両方で使う）
   const dist1 = () => exDist(false), dist2 = () => exDist(true), fexp1 = () => exFracExpr(false), fexp2 = () => exFracExpr(true);
   const avgQ = () => exExpress(0), orderQ = () => exExpress(1), propQ = () => exProp(pick([0, 2, 3])), invQ = () => exProp(pick([1, 4]));
   const val2Q = () => pick([exVal2, exVal3])();
+  // 同じ種類にまとめる型（どれか1つを選ぶ。目安時間は選んだ型のもの）
+  const mix = (...fs) => Object.assign(() => pick(fs)(), { fs });
   // 1問あたりの目安時間（分）。中学生がていねいに途中式を書いて解く速さ
   const MIN = new Map([
     [exInt, 1], [exPow, 1.5], [exFrac, 2], [exFracHard, 3], [orderQ, 1.5], [dist1, 1.5], [dist2, 1.5], [fexp1, 2.5], [fexp2, 2.5], [exFracDist, 2.5],
     [exVal1, 1.5], [exVal2, 2], [exVal3, 2], [val2Q, 2], [avgQ, 1.5], [exExpress, 1.5], [exEq, 2.5], [exProp, 2], [propQ, 2], [invQ, 1.5],
     [exData, 2.5], [exFig, 2], [exMono, 1.5], [exMonoHard, 3], [exSolveFor, 2], [exSys, 3.5], [exFreq, 5], [exLinear, 2.5], [exXint, 1.5],
     [exProb, 3], [exExpand, 1.5], [exFactor, 2], [exFactVal, 3], [exSqrt, 2.5], [exSqrtInt, 3], [exQuad, 2.5], [exFunc3, 2.5],
+    [exIntB, 1], [exPowB, 1.5], [exFracHard2, 3], [exOrderInt, 1], [exSignQ, 2], [exTemp, 3], [exFracDist1, 2], [exDecFrac, 2.5], [exVal1b, 1.5], [exRel, 1.5],
+    [exEqFrac, 2.5], [exInvRange, 2], [exLinePt, 2], [exProbSet, 2.5], [exMonoC, 1.5], [exSolveFrac, 2.5], [exSqrtCnt, 2], [exTF, 2.5], [exFigB, 2],
   ]);
-  const run = fn => { const r = fn(); if (r) r.min = MIN.get(fn) || 2; return r; };
+  const run = fn => { const g = fn.fs ? pick(fn.fs) : fn, r = g(); if (r) r.min = MIN.get(g) || MIN.get(fn) || 2; return r; };
   // 学年ごとの 問1〜問10（入試の小問集合の並び。その学年までの内容）
   const SLOTS = {
-    1: [[exInt], [exPow], [exFrac], [dist1], [fexp1], [exEq], [exVal1], [exProp], [exExpress, exData], [exFig]],
-    2: [[exInt, exPow], [exFrac, exFracHard], [fexp2, dist2], [exMono, exMonoHard], [exVal2, exVal3], [exEq, exSolveFor], [exSys, exFreq], [exLinear, exXint], [exProb, exProp], [exFig]],
-    3: [[exFrac, exFracHard, exPow], [fexp2, exFracDist, exMonoHard], [exExpand, exFactor], [exSqrt], [exQuad], [exSys, exSolveFor], [exFunc3, exLinear, exXint], [exProb], [exSqrtInt, exFactVal], [exFig]],
+    1: [[exInt, exIntB, exOrderInt], [exPow, exPowB], [exFrac, exFracHard2], [dist1, exFracDist1], [fexp1, exDecFrac], [exEq, exEqFrac], [exVal1, exVal1b], [exProp, exInvRange], [exExpress, exData, exRel, exTemp, exSignQ], [exFig, exFigB]],
+    2: [[exInt, exPow, exIntB, exPowB], [exFrac, exFracHard, exFracHard2], [fexp2, dist2, exDecFrac], [exMono, exMonoHard, exMonoC], [exVal2, exVal3], [exEq, exSolveFor, exEqFrac, exSolveFrac], [exSys, exFreq], [exLinear, exXint, exLinePt, exInvRange], [exProb, exProp, exProbSet], [exFig, exFigB]],
+    3: [[exFrac, exFracHard, exFracHard2, exPow, exPowB], [fexp2, exFracDist, exMonoHard, exDecFrac], [exExpand, exFactor], [exSqrt, exTF], [exQuad], [exSys, exSolveFor, exSolveFrac], [exFunc3, exLinear, exXint, exLinePt], [exProb, exProbSet], [exSqrtInt, exFactVal, exSqrtCnt], [exFig, exFigB]],
   };
   // n 問：10の並び（やさしい → むずかしい）から等間かくに選ぶ。15・20問なら同じ番号の型が2回ずつ出る
   function gen(grade, n = 10){
@@ -4596,17 +4924,17 @@ const EXAM = (() => {
   }
   // 問題の種類ごと：その学年で習う内容を 単元 → 種類 にグループ分け（同じ種類を n 問）
   const TYPES = {
-    1: [['正負の数', [['int', '正負の数の四則', exInt], ['pow', '累乗をふくむ計算', exPow], ['frac', '分数・小数の計算', exFrac], ['hard', '中かっこ・累乗をふくむ計算', exFracHard], ['order', '数の大小', orderQ]]],
-      ['文字式', [['dist', 'かっこをふくむ式', dist1], ['fexp', '分数をふくむ式', fexp1], ['val', '式の値', exVal1], ['avg', '数量を式で表す（平均）', avgQ]]],
-      ['方程式', [['eq', '1次方程式', exEq]]],
-      ['比例・反比例', [['prop', '比例', propQ], ['inv', '反比例', invQ]]],
-      ['図形・データ', [['fig', '図形の計量', exFig], ['data', '代表値（最頻値・中央値・範囲）', exData]]]],
-    2: [['式の計算', [['fexp', '分数をふくむ式', fexp2], ['dist', 'かっこをふくむ式', dist2], ['mono', '単項式の乗除', exMono], ['mono2', '単項式の乗除（累乗・分数）', exMonoHard], ['val', '式の値', val2Q], ['solve', '等式の変形', exSolveFor]]],
+    1: [['正負の数', [['int', '正負の数の四則', mix(exInt, exIntB)], ['pow', '累乗をふくむ計算', mix(exPow, exPowB)], ['frac', '分数・小数の計算', exFrac], ['hard', '中かっこ・累乗をふくむ計算', mix(exFracHard, exFracHard2)], ['order', '数の大小', mix(orderQ, exOrderInt)], ['sign', '正負の数の性質', exSignQ], ['temp', '正負の数の利用（気温）', exTemp]]],
+      ['文字式', [['dist', 'かっこをふくむ式', mix(dist1, exFracDist1)], ['fexp', '分数をふくむ式', mix(fexp1, exDecFrac)], ['val', '式の値', mix(exVal1, exVal1b)], ['avg', '数量を式で表す（平均）', avgQ], ['rel', '数量の関係を等式で表す', exRel]]],
+      ['方程式', [['eq', '1次方程式', mix(exEq, exEqFrac)]]],
+      ['比例・反比例', [['prop', '比例', propQ], ['inv', '反比例', mix(invQ, exInvRange)]]],
+      ['図形・データ', [['fig', '図形の計量', mix(exFig, exFigB)], ['data', '代表値（最頻値・中央値・範囲）', exData]]]],
+    2: [['式の計算', [['fexp', '分数をふくむ式', fexp2], ['dist', 'かっこをふくむ式', dist2], ['mono', '単項式の乗除', mix(exMono, exMonoC)], ['mono2', '単項式の乗除（累乗・分数）', exMonoHard], ['val', '式の値', val2Q], ['solve', '等式の変形', mix(exSolveFor, exSolveFrac)]]],
       ['連立方程式', [['sys', '連立方程式', exSys], ['freq', '表から連立方程式', exFreq]]],
-      ['1次関数', [['lin', '1次関数（変域・傾き・2点）', exLinear], ['xint', 'グラフと軸の交点', exXint]]],
-      ['確率', [['prob', '確率', exProb]]]],
+      ['1次関数', [['lin', '1次関数（変域・傾き・2点）', mix(exLinear, exLinePt)], ['xint', 'グラフと軸の交点', exXint]]],
+      ['確率', [['prob', '確率', mix(exProb, exProbSet)]]]],
     3: [['展開・因数分解', [['expand', '式の展開', exExpand], ['factor', '因数分解', exFactor], ['fval', '因数分解を使った式の値', exFactVal]]],
-      ['平方根', [['sqrt', '平方根の計算', exSqrt], ['sqint', '平方根と整数', exSqrtInt]]],
+      ['平方根', [['sqrt', '平方根の計算', exSqrt], ['sqint', '平方根と整数', mix(exSqrtInt, exSqrtCnt)], ['tf', '数の性質（○×）', exTF]]],
       ['2次方程式', [['quad', '2次方程式', exQuad]]],
       ['関数 y=ax²', [['func', '関数 y=ax²・変化の割合', exFunc3]]]],
   };
