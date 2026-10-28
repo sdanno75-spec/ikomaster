@@ -35,6 +35,11 @@ header{padding:22px 0 10px;display:flex;flex-wrap:wrap;gap:12px 24px;align-items
 .tabs{display:flex;gap:4px;background:#ebe6d9;padding:4px;border-radius:12px;flex-wrap:wrap}
 .tabs button{border:0;background:transparent;padding:7px 14px;border-radius:9px;font-size:14px;font-weight:500;color:var(--muted)}
 .tabs button.on{background:var(--card);color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.08)}
+.navs{flex-basis:100%;display:flex;flex-direction:column;gap:8px;align-items:flex-start}
+.gtabs{display:flex;gap:6px;flex-wrap:wrap}
+.gtabs button{border:1px solid var(--line);background:var(--card);padding:8px 18px;border-radius:12px;font-size:15px;font-weight:700;color:var(--muted)}
+.gtabs button.on{background:var(--ink);border-color:var(--ink);color:var(--card)}
+.tabs button.gout,.tabs button.hid{display:none}
 
 /* toolbar */
 .toolbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:12px 0}
@@ -515,17 +520,24 @@ body.paper .resline .kc,body.paper .resline .eq{border-top-color:#111}
       <p>＝をそろえて、一行ずつ。移項・計算の順序・書き写しを、手と目で覚える。</p>
     </div>
     <button class="setbtn" id="setBtn" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg><span>設定</span></button>
+    <div class="navs">
+    <!-- 大きな分け方：プリント・テストを作る（先生用、最初に開く）／アプリで練習する（生徒用） -->
+    <nav class="gtabs" id="gtabs">
+      <button data-g="make" class="on">プリント・テスト作成</button>
+      <button data-g="learn">アプリで練習</button>
+    </nav>
     <nav class="tabs" id="tabs">
-      <button data-mode="eq" class="on">方程式</button>
-      <button data-mode="prop">比例式</button>
-      <button data-mode="simul">連立方程式</button>
-      <button data-mode="word">文章題</button>
+      <button data-mode="print" data-g="make" class="on">プリント</button>
+      <button data-mode="quiz" data-g="make">小テスト</button>
+      <button data-mode="eq" data-g="learn">方程式</button>
+      <button data-mode="prop" data-g="learn">比例式</button>
+      <button data-mode="simul" data-g="learn">連立方程式</button>
+      <button data-mode="word" data-g="learn">文章題</button>
       <!-- 「自分で入力」はタブには出さない（文章題の「練習画面で自分で解いてみる」から使う） -->
-      <button data-mode="custom" hidden>自分で入力</button>
-      <button data-mode="print">プリント</button>
-      <button data-mode="quiz">小テスト</button>
+      <button data-mode="custom" data-g="learn" class="hid">自分で入力</button>
       <button data-mode="help">使い方</button>
     </nav>
+    </div>
   </header>
 
   <section class="view show" id="view-main">
@@ -731,9 +743,9 @@ body.paper .resline .kc,body.paper .resline .eq{border-top-color:#111}
 
 <script>
 'use strict';
-const VERSION = '1.20.0';
+const VERSION = '1.21.0';
 const UPDATED = '2026-10-29';
-const CHANGES = '大問の境目で改ページできるように（文章題プリント・小テストの文章題・実践プリント）。「ここで改ページ」で次の大問から新しいページへ、残ったわくは下まで広がる。「改ページを取り消す」で元にもどる。ボタンは印刷されない。プリント・小テストの問題ページで、わくの上下の境目をドラッグして書くスペースを調整できるように（ページごと。作りなおすと元にもどる。つまみは印刷されない）。○×の問題で、A・B の分数が重なるのを直した（行のすき間を広げた）。「自分で入力」タブをなくした（文章題の「練習画面で自分で解いてみる」からは今までどおり使える）。実践プリントの型を追加（サンプル3回目）：(a−b²)÷c−d²、−20−(−22)−9、{分数＋累乗}÷(−n)、小数より小さい整数、a正b負の性質、気温の差、分数×かっこ（1文字）、1.5x−(2x−1)/3、a²−9/a、数量の関係を等式で表す、分数係数の1次方程式、反比例の変域、傾きと1点から直線の式、数の選び方の確率、(2ab)³÷(−a²b)、分数の等式変形、√a〜√b の整数の個数、○×（循環小数・無理数）、半径が分数の球・おうぎ形の中心角・円柱の体積・半円のまわり。分数が小さく表示されないように、すべての数式を \displaystyle で表示（アプリ・プリント・小テスト・解答・LaTeX）。プリントの「問題の文字」を 小さめ／ふつう／大きめ から選べるように（くわしい設定。解答・解説の大きさは変えない）。プリント（計算）の「＝の点線」を あり／なし で選べるように（くわしい設定）。プリントの設定画面を整理：1 何を作る？ → 2 単元（学年）→ 3 種類 の手順式に。問題数・解答・文字の指定・文字の形は「くわしい設定」に折りたたみ。作りなおす・PDF・印刷のボタンは画面の下に固定。目安時間はプリントに印刷せず画面にだけ表示。実践・文章題の解答解説を1段組みに（文が折れないように）。実践プリント：問題数（5・10・15・20）を選べるように（入試形式・種類ごと両方）。1枚目に目安時間（1問ごとの目安の合計を5分単位）を表示。PDF を画像ではなく文字のまま保存するように変更（ブラウザの印刷の「PDF に保存」を使う。拡大してもくっきり）。プリント・小テスト共通。プリントに「PDF を保存」ボタンを追加（計算・文章題・実践の全分野。ファイル名はプリントのタイトル＋日付）。実践プリント：「中かっこ・累乗をふくむ計算」（例：−8×{−0.8÷(−4/5)²−(−3²)}）を4通りの形にふやし、種類ごと（中1 → 正負の数）でも選べるように。入試形式の中2問2にもまざる。実践プリントに「単項式の乗除（累乗・分数）」を追加（例：(−2xy²)³×5/6 x²y÷(−4/3 xy³)²）。入試形式の中2・中3にもまざる。実践プリントに「出し方：問題の種類ごと（10問）」を追加（学年 → 単元 → 種類）。サンプルから新しい型を追加：表と平均点から連立方程式、代表値（最頻値・中央値・範囲）、グラフと軸の交点、因数分解を使った式の値（x=3√2−4 など）、単項式のわり算をしてからの式の値、素数の確率、四角錐の高さ、(2x−5y)(3x+4y) の展開、−2y(2x−1)² の因数分解、√96−9√6、a²b×(−ab)³、反比例の比例定数。プリントに分野「実践（入試形式）」を追加：中1・中2・中3 を選ぶと、その学年までの内容から入試の小問集合と同じ並びで 問1〜問10 を自動作成（正負の数・分数の計算、文字式、方程式、連立方程式、等式変形、比例・反比例、1次関数、確率、展開・因数分解、平方根、2次方程式、関数 y=ax²、図形の計量）。解答は答えと短い解説。プリントの見出しを、タイトルの行と名前の行に分けた（タイトルが長いと名前欄がはみ出していたのを修正）。文字の指定「自分で置く」：「方程式をつくりなさい」の小問をやめ、求める問い（例：それぞれ何個買いましたか）を問題文の最後に入れる形に。文章題のプリント・小テスト：大問の番号を「問1」「問2」に（小問 (1)(2) と区別）。「文字の指定」を追加：問題に書く（やさしい）／自分で置く（むずかしい：何を x、y にするかも自分で決める）。文章題：問題文を画面の上に固定表示（ステップ1はその問題文の中の数をタップ）。タップできる場所の点線をなくした。文章題の学習ページを、各ステップで学習者が答える形に（数をタップ・求めるものを選ぶ・文字の決め方を選ぶ・表の空らんをうめる・式を選ぶ・答えを入力・最後の問いに答える）。文章題（大問）を追加：「文章題」タブで思考フロー（読む→求めるもの→文字→表→式を選ぶ→解く→確かめる）にそって学習。プリント（分野「文章題」）と小テスト（文章題（大問））にも対応。A＝B＝C の形は点線なしで表示。長い式（中かっこなど）が折り返さないように、文字の大きさと「＝」の位置を自動で調整。プリントを「単元 → 種類（やさしい順）」の選び方に整理。どの単元でも分数・小数・中かっこを選べるように。連立方程式に「比例式をふくむ」「A＝B＝C の形」を追加。小テストに1次不等式と新しい種類を追加。プリントもページ番号をフッターに。';
+const CHANGES = 'タブを「プリント・テスト作成」（プリント・小テスト）と「アプリで練習」（方程式・比例式・連立方程式・文章題）の2つのグループに分けた。開いたときは「プリント」が最初に出る。大問の境目で改ページできるように（文章題プリント・小テストの文章題・実践プリント）。「ここで改ページ」で次の大問から新しいページへ、残ったわくは下まで広がる。「改ページを取り消す」で元にもどる。ボタンは印刷されない。プリント・小テストの問題ページで、わくの上下の境目をドラッグして書くスペースを調整できるように（ページごと。作りなおすと元にもどる。つまみは印刷されない）。○×の問題で、A・B の分数が重なるのを直した（行のすき間を広げた）。「自分で入力」タブをなくした（文章題の「練習画面で自分で解いてみる」からは今までどおり使える）。実践プリントの型を追加（サンプル3回目）：(a−b²)÷c−d²、−20−(−22)−9、{分数＋累乗}÷(−n)、小数より小さい整数、a正b負の性質、気温の差、分数×かっこ（1文字）、1.5x−(2x−1)/3、a²−9/a、数量の関係を等式で表す、分数係数の1次方程式、反比例の変域、傾きと1点から直線の式、数の選び方の確率、(2ab)³÷(−a²b)、分数の等式変形、√a〜√b の整数の個数、○×（循環小数・無理数）、半径が分数の球・おうぎ形の中心角・円柱の体積・半円のまわり。分数が小さく表示されないように、すべての数式を \displaystyle で表示（アプリ・プリント・小テスト・解答・LaTeX）。プリントの「問題の文字」を 小さめ／ふつう／大きめ から選べるように（くわしい設定。解答・解説の大きさは変えない）。プリント（計算）の「＝の点線」を あり／なし で選べるように（くわしい設定）。プリントの設定画面を整理：1 何を作る？ → 2 単元（学年）→ 3 種類 の手順式に。問題数・解答・文字の指定・文字の形は「くわしい設定」に折りたたみ。作りなおす・PDF・印刷のボタンは画面の下に固定。目安時間はプリントに印刷せず画面にだけ表示。実践・文章題の解答解説を1段組みに（文が折れないように）。実践プリント：問題数（5・10・15・20）を選べるように（入試形式・種類ごと両方）。1枚目に目安時間（1問ごとの目安の合計を5分単位）を表示。PDF を画像ではなく文字のまま保存するように変更（ブラウザの印刷の「PDF に保存」を使う。拡大してもくっきり）。プリント・小テスト共通。プリントに「PDF を保存」ボタンを追加（計算・文章題・実践の全分野。ファイル名はプリントのタイトル＋日付）。実践プリント：「中かっこ・累乗をふくむ計算」（例：−8×{−0.8÷(−4/5)²−(−3²)}）を4通りの形にふやし、種類ごと（中1 → 正負の数）でも選べるように。入試形式の中2問2にもまざる。実践プリントに「単項式の乗除（累乗・分数）」を追加（例：(−2xy²)³×5/6 x²y÷(−4/3 xy³)²）。入試形式の中2・中3にもまざる。実践プリントに「出し方：問題の種類ごと（10問）」を追加（学年 → 単元 → 種類）。サンプルから新しい型を追加：表と平均点から連立方程式、代表値（最頻値・中央値・範囲）、グラフと軸の交点、因数分解を使った式の値（x=3√2−4 など）、単項式のわり算をしてからの式の値、素数の確率、四角錐の高さ、(2x−5y)(3x+4y) の展開、−2y(2x−1)² の因数分解、√96−9√6、a²b×(−ab)³、反比例の比例定数。プリントに分野「実践（入試形式）」を追加：中1・中2・中3 を選ぶと、その学年までの内容から入試の小問集合と同じ並びで 問1〜問10 を自動作成（正負の数・分数の計算、文字式、方程式、連立方程式、等式変形、比例・反比例、1次関数、確率、展開・因数分解、平方根、2次方程式、関数 y=ax²、図形の計量）。解答は答えと短い解説。プリントの見出しを、タイトルの行と名前の行に分けた（タイトルが長いと名前欄がはみ出していたのを修正）。文字の指定「自分で置く」：「方程式をつくりなさい」の小問をやめ、求める問い（例：それぞれ何個買いましたか）を問題文の最後に入れる形に。文章題のプリント・小テスト：大問の番号を「問1」「問2」に（小問 (1)(2) と区別）。「文字の指定」を追加：問題に書く（やさしい）／自分で置く（むずかしい：何を x、y にするかも自分で決める）。文章題：問題文を画面の上に固定表示（ステップ1はその問題文の中の数をタップ）。タップできる場所の点線をなくした。文章題の学習ページを、各ステップで学習者が答える形に（数をタップ・求めるものを選ぶ・文字の決め方を選ぶ・表の空らんをうめる・式を選ぶ・答えを入力・最後の問いに答える）。文章題（大問）を追加：「文章題」タブで思考フロー（読む→求めるもの→文字→表→式を選ぶ→解く→確かめる）にそって学習。プリント（分野「文章題」）と小テスト（文章題（大問））にも対応。A＝B＝C の形は点線なしで表示。長い式（中かっこなど）が折り返さないように、文字の大きさと「＝」の位置を自動で調整。プリントを「単元 → 種類（やさしい順）」の選び方に整理。どの単元でも分数・小数・中かっこを選べるように。連立方程式に「比例式をふくむ」「A＝B＝C の形」を追加。小テストに1次不等式と新しい種類を追加。プリントもページ番号をフッターに。';
 
 /* =========================================================
    有理数
@@ -2105,10 +2117,24 @@ function undo(){
   render();
   msg('ひとつ前の行にもどしました。', 'info');
 }
+// グループのタブ：そのグループのタブだけを出し、前にそのグループで開いていたタブ（なければ最初のタブ）を開く
+const lastTab = { make: 'print', learn: 'eq' };
+function showGroup(g){
+  document.querySelectorAll('#gtabs button').forEach(x => x.classList.toggle('on', x.dataset.g === g));
+  document.querySelectorAll('#tabs button[data-g]').forEach(x => x.classList.toggle('gout', x.dataset.g !== g));
+  $('tabs').dataset.g = g;
+}
+$('gtabs').addEventListener('click', e => {
+  const b = e.target.closest('button[data-g]');
+  if (!b) return;
+  showGroup(b.dataset.g);
+  document.querySelector(`#tabs [data-mode="${lastTab[b.dataset.g]}"]`).click();
+});
 $('tabs').addEventListener('click', e => {
   const b = e.target.closest('button[data-mode]');
   if (!b) return;
   const m = b.dataset.mode;
+  if (b.dataset.g) { if ($('tabs').dataset.g !== b.dataset.g) showGroup(b.dataset.g); lastTab[b.dataset.g] = m; }
   document.querySelectorAll('#tabs button').forEach(x => x.classList.toggle('on', x === b));
   const view = ['help', 'print', 'quiz', 'word'].includes(m) ? m : 'main';
   ['main', 'help', 'print', 'quiz', 'word'].forEach(v => $('view-' + v).classList.toggle('show', v === view));
@@ -4958,6 +4984,9 @@ const EXAM = (() => {
 
 window.__engine = { parseProblem, parseInput, solveEq, solveProp, solveSystem, genEq, genProp, genKasan, genDainyu, eqTex, S, calc, transpose, tap, divideBoth, propTap, hint, undo, q, multiplyEq, combineEqs, substitute, stdForm, subSide, QZ, genQuizProb, makeQuiz, quizLatex, solveSteps, toQuizItems, genIneq, genKind, KINDS, PR, genWord, WORD, WS, EXAM };
 startProblem(genEq('basic'));
+// 最初は「プリント・テスト作成」の「プリント」を開く
+showGroup('make');
+document.querySelector('#tabs [data-mode="print"]').click();
 </script>
 </body>
 </html>
