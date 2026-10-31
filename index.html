@@ -230,6 +230,7 @@ body.paper .resline .kc,body.paper .resline .eq{border-top-color:#111}
 .qa-steps .nt{white-space:normal!important;max-width:30mm;line-height:1.25}
 .qa-steps .nt{font-size:.75em;color:#666;white-space:nowrap;text-align:right;padding-left:1.5mm}
 .qa-steps .arr{grid-column:2 / 5;justify-self:center;margin:.8mm 0}
+.nlfig{display:block;width:56mm;height:auto}
 .qa-ans{margin-top:1mm;font-weight:700}
 
 /* ===== 文章題（学習ページ） ===== */
@@ -376,10 +377,16 @@ body.paper .resline .kc,body.paper .resline .eq{border-top-color:#111}
 .sh-box::before{content:'';position:absolute;left:var(--ax,50%);top:15mm;bottom:3mm;border-left:1px dashed #bdbdbd}
 .sh-box.noaxis::before,.sh-box.wbox::before,#sheets.noax .sh-box::before{display:none}
 .sh-free{font-size:calc(14pt * var(--fs, 1));white-space:nowrap;padding-left:2mm}
-.sh-no{font-size:11pt;font-weight:700}
+/* 問題番号は式と同じ行の左に（改行しない）。式のブロックは番号の右に並ぶ */
+.sh-no{font-size:11pt;font-weight:700;float:left;margin-right:2mm;line-height:calc(14pt * var(--fs, 1) * 1.45)}
+.sh-sys,.sh-free{display:flow-root}
 .sh-eq{display:grid;grid-template-columns:1fr 9mm 1fr;align-items:center;font-size:calc(14pt * var(--fs, 1));white-space:nowrap}
 .sh-eq .l{text-align:right}
 .sh-eq .m{text-align:center}
+/* 点線なし：式を左にそろえて1行で書く（連立は ｛ のすぐ右に） */
+#sheets.noax .sh-eq{display:flex;align-items:center}
+#sheets.noax .sh-eq .l{text-align:left}
+#sheets.noax .sh-eq .m{margin:0 .28em}
 .sh-ans{display:grid;grid-template-columns:1fr 1fr;gap:5mm 10mm;font-size:12pt}
 .sh-ans .sh-x{display:inline-block;margin-top:1mm;font-size:14pt;font-weight:700}
 @media print{
@@ -600,7 +607,7 @@ body.paper .resline .kc,body.paper .resline .eq{border-top-color:#111}
       <div class="pstep"><div class="pstep-h"><span class="pnum">2</span><span id="pStep2Label">単元を選ぶ</span></div>
         <span class="set" id="pGradeWrap" style="display:none">学年 <span class="seg" id="pGrade"><button data-v="1">中1</button><button data-v="2">中2</button><button data-v="3" class="on">中3</button></span><span class="pnote" id="pGradeNote">その学年までの内容から（入試の並び）</span></span>
         <span class="set" id="pEModeWrap" style="display:none">出し方 <span class="seg" id="pEMode"><button data-v="mix" class="on">入試形式（入試の並び）</button><button data-v="type">問題の種類ごと</button></span></span>
-        <span class="set" id="pUnitWrap">単元 <span class="seg" id="pUnit"><button data-v="eq" class="on">1次方程式</button><button data-v="prop">比例式</button><button data-v="sys">連立方程式</button><button data-v="ineq">1次不等式</button></span></span>
+        <span class="set" id="pUnitWrap">単元 <span class="seg" id="pUnit"><button data-v="eq" class="on">1次方程式</button><button data-v="prop">比例式</button><button data-v="sys">連立方程式</button><button data-v="ineq">1次不等式</button><button data-v="sineq">連立不等式</button></span></span>
         <span class="set" id="pMethodWrap" style="display:none">解き方 <span class="seg" id="pMethod"><button data-v="kasan" class="on">加減法</button><button data-v="dainyu">代入法</button></span></span>
       </div>
       <div class="pstep" id="pStep3"><div class="pstep-h"><span class="pnum">3</span>種類を選ぶ</div>
@@ -612,8 +619,9 @@ body.paper .resline .kc,body.paper .resline .eq{border-top-color:#111}
         <span class="set" id="pECountWrap" style="display:none">問題数 <span class="seg" id="pECount"><button data-v="5">5</button><button data-v="10" class="on">10</button><button data-v="15">15</button><button data-v="20">20</button></span></span>
         <span class="set" id="pCountWrap">問題数 <span class="seg" id="pCount"><button data-v="4">4</button><button data-v="6" class="on">6</button><button data-v="8">8</button><button data-v="10">10</button></span></span>
         <span class="set" id="pFsizeWrap">問題の文字 <span class="seg" id="pFsize"><button data-v="s">小さめ</button><button data-v="m" class="on">ふつう</button><button data-v="l">大きめ</button></span></span>
-        <span class="set" id="pAxisWrap">＝の点線 <span class="seg" id="pAxis"><button data-v="on" class="on">あり</button><button data-v="off">なし</button></span></span>
+        <span class="set" id="pAxisWrap">＝の点線 <span class="seg" id="pAxis"><button data-v="off" class="on">なし（左にそろえる）</button><button data-v="on">あり（＝・不等号をそろえる）</button></span></span>
         <span class="set pans">解答 <span class="seg" id="pAns"><button data-v="on" class="on">つける</button><button data-v="off">つけない</button></span></span>
+        <span class="set" id="pSpWrap" style="display:none">ミックスに 解なし・x＝a の問題を <span class="seg" id="pSp"><button data-v="on" class="on">まぜる</button><button data-v="off">まぜない</button></span></span>
         <span class="set" id="pVarWrap" style="display:none">文字の指定 <span class="seg" id="pVar"><button data-v="given" class="on">問題に書く（やさしい）</button><button data-v="self">自分で置く（むずかしい）</button></span></span>
         <span class="set opt-set">文字 <span class="seg" data-set="font"><button data-v="maru">まる文字</button><button data-v="round">まるゴシック</button><button data-v="klee">手書き風</button><button data-v="gothic">ゴシック</button><button data-v="mincho">明朝</button></span></span>
         </div>
@@ -640,6 +648,7 @@ body.paper .resline .kc,body.paper .resline .eq{border-top-color:#111}
         <label class="chk"><input type="checkbox" name="qunit" value="prop">比例式</label>
         <label class="chk"><input type="checkbox" name="qunit" value="sys">連立方程式</label>
         <label class="chk"><input type="checkbox" name="qunit" value="ineq">1次不等式</label>
+        <label class="chk"><input type="checkbox" name="qunit" value="sineq">連立不等式</label>
         <label class="chk"><input type="checkbox" name="qunit" value="word">文章題（大問）</label>
         <span class="qnote">1つなら その単元だけで10問、複数なら まぜて10問</span>
       </div>
@@ -648,6 +657,10 @@ body.paper .resline .kc,body.paper .resline .eq{border-top-color:#111}
         <label class="chk"><input type="radio" name="qlv" value="2">レベル2（かっこ・分数・小数の標準）</label>
         <label class="chk"><input type="radio" name="qlv" value="3">レベル3（複雑な分数・整理が必要な応用）</label>
         <label class="chk"><input type="radio" name="qlv" value="mix" checked>段階的ミックス（1〜4問 Lv1／5〜8問 Lv2／9・10問 Lv3）</label>
+      </div>
+      <div class="qrow" id="qSpRow" style="display:none"><span class="qlab">連立不等式</span>
+        <label class="chk"><input type="radio" name="qsp" value="on" checked>解なし・x＝a の問題をまぜる（レベル3）</label>
+        <label class="chk"><input type="radio" name="qsp" value="off">まぜない</label>
       </div>
       <div class="qrow" id="qVarRow" style="display:none"><span class="qlab">文字の指定</span>
         <label class="chk"><input type="radio" name="qvar" value="given" checked>問題に書く（やさしい：「x 個として」などと書いてある）</label>
@@ -747,9 +760,9 @@ body.paper .resline .kc,body.paper .resline .eq{border-top-color:#111}
 
 <script>
 'use strict';
-const VERSION = '1.22.0';
-const UPDATED = '2026-10-29';
-const CHANGES = 'プリント・小テストに「改ページをすべてリセット」「わくを元にもどす」ボタンを追加。タブを「プリント・テスト作成」（プリント・小テスト）と「アプリで練習」（方程式・比例式・連立方程式・文章題）の2つのグループに分けた。開いたときは「プリント」が最初に出る。大問の境目で改ページできるように（文章題プリント・小テストの文章題・実践プリント）。「ここで改ページ」で次の大問から新しいページへ、残ったわくは下まで広がる。「改ページを取り消す」で元にもどる。ボタンは印刷されない。プリント・小テストの問題ページで、わくの上下の境目をドラッグして書くスペースを調整できるように（ページごと。作りなおすと元にもどる。つまみは印刷されない）。○×の問題で、A・B の分数が重なるのを直した（行のすき間を広げた）。「自分で入力」タブをなくした（文章題の「練習画面で自分で解いてみる」からは今までどおり使える）。実践プリントの型を追加（サンプル3回目）：(a−b²)÷c−d²、−20−(−22)−9、{分数＋累乗}÷(−n)、小数より小さい整数、a正b負の性質、気温の差、分数×かっこ（1文字）、1.5x−(2x−1)/3、a²−9/a、数量の関係を等式で表す、分数係数の1次方程式、反比例の変域、傾きと1点から直線の式、数の選び方の確率、(2ab)³÷(−a²b)、分数の等式変形、√a〜√b の整数の個数、○×（循環小数・無理数）、半径が分数の球・おうぎ形の中心角・円柱の体積・半円のまわり。分数が小さく表示されないように、すべての数式を \displaystyle で表示（アプリ・プリント・小テスト・解答・LaTeX）。プリントの「問題の文字」を 小さめ／ふつう／大きめ から選べるように（くわしい設定。解答・解説の大きさは変えない）。プリント（計算）の「＝の点線」を あり／なし で選べるように（くわしい設定）。プリントの設定画面を整理：1 何を作る？ → 2 単元（学年）→ 3 種類 の手順式に。問題数・解答・文字の指定・文字の形は「くわしい設定」に折りたたみ。作りなおす・PDF・印刷のボタンは画面の下に固定。目安時間はプリントに印刷せず画面にだけ表示。実践・文章題の解答解説を1段組みに（文が折れないように）。実践プリント：問題数（5・10・15・20）を選べるように（入試形式・種類ごと両方）。1枚目に目安時間（1問ごとの目安の合計を5分単位）を表示。PDF を画像ではなく文字のまま保存するように変更（ブラウザの印刷の「PDF に保存」を使う。拡大してもくっきり）。プリント・小テスト共通。プリントに「PDF を保存」ボタンを追加（計算・文章題・実践の全分野。ファイル名はプリントのタイトル＋日付）。実践プリント：「中かっこ・累乗をふくむ計算」（例：−8×{−0.8÷(−4/5)²−(−3²)}）を4通りの形にふやし、種類ごと（中1 → 正負の数）でも選べるように。入試形式の中2問2にもまざる。実践プリントに「単項式の乗除（累乗・分数）」を追加（例：(−2xy²)³×5/6 x²y÷(−4/3 xy³)²）。入試形式の中2・中3にもまざる。実践プリントに「出し方：問題の種類ごと（10問）」を追加（学年 → 単元 → 種類）。サンプルから新しい型を追加：表と平均点から連立方程式、代表値（最頻値・中央値・範囲）、グラフと軸の交点、因数分解を使った式の値（x=3√2−4 など）、単項式のわり算をしてからの式の値、素数の確率、四角錐の高さ、(2x−5y)(3x+4y) の展開、−2y(2x−1)² の因数分解、√96−9√6、a²b×(−ab)³、反比例の比例定数。プリントに分野「実践（入試形式）」を追加：中1・中2・中3 を選ぶと、その学年までの内容から入試の小問集合と同じ並びで 問1〜問10 を自動作成（正負の数・分数の計算、文字式、方程式、連立方程式、等式変形、比例・反比例、1次関数、確率、展開・因数分解、平方根、2次方程式、関数 y=ax²、図形の計量）。解答は答えと短い解説。プリントの見出しを、タイトルの行と名前の行に分けた（タイトルが長いと名前欄がはみ出していたのを修正）。文字の指定「自分で置く」：「方程式をつくりなさい」の小問をやめ、求める問い（例：それぞれ何個買いましたか）を問題文の最後に入れる形に。文章題のプリント・小テスト：大問の番号を「問1」「問2」に（小問 (1)(2) と区別）。「文字の指定」を追加：問題に書く（やさしい）／自分で置く（むずかしい：何を x、y にするかも自分で決める）。文章題：問題文を画面の上に固定表示（ステップ1はその問題文の中の数をタップ）。タップできる場所の点線をなくした。文章題の学習ページを、各ステップで学習者が答える形に（数をタップ・求めるものを選ぶ・文字の決め方を選ぶ・表の空らんをうめる・式を選ぶ・答えを入力・最後の問いに答える）。文章題（大問）を追加：「文章題」タブで思考フロー（読む→求めるもの→文字→表→式を選ぶ→解く→確かめる）にそって学習。プリント（分野「文章題」）と小テスト（文章題（大問））にも対応。A＝B＝C の形は点線なしで表示。長い式（中かっこなど）が折り返さないように、文字の大きさと「＝」の位置を自動で調整。プリントを「単元 → 種類（やさしい順）」の選び方に整理。どの単元でも分数・小数・中かっこを選べるように。連立方程式に「比例式をふくむ」「A＝B＝C の形」を追加。小テストに1次不等式と新しい種類を追加。プリントもページ番号をフッターに。';
+const VERSION = '1.24.1';
+const UPDATED = '2026-10-31';
+const CHANGES = 'プリントの問題番号 (1) を、式と同じ行の左に置くように（番号のあとで改行しない）。プリントの「＝の点線」を「なし（左にそろえる）」が最初の設定に。点線なしのときは式を左にそろえ、連立は ｛ のすぐ右に書く。「あり」にすると＝や不等号の位置がそろう。プリント（計算）と小テストに「連立不等式」を追加（基本・かっこ・小数・分数・A＜B＜C の形・特別な答え）。解答に数直線の図（●○・共通部分に斜線）。解なし・x＝a の問題は、ミックスや小テストにまぜるかを選べる。プリント・小テストに「改ページをすべてリセット」「わくを元にもどす」ボタンを追加。タブを「プリント・テスト作成」（プリント・小テスト）と「アプリで練習」（方程式・比例式・連立方程式・文章題）の2つのグループに分けた。開いたときは「プリント」が最初に出る。大問の境目で改ページできるように（文章題プリント・小テストの文章題・実践プリント）。「ここで改ページ」で次の大問から新しいページへ、残ったわくは下まで広がる。「改ページを取り消す」で元にもどる。ボタンは印刷されない。プリント・小テストの問題ページで、わくの上下の境目をドラッグして書くスペースを調整できるように（ページごと。作りなおすと元にもどる。つまみは印刷されない）。○×の問題で、A・B の分数が重なるのを直した（行のすき間を広げた）。「自分で入力」タブをなくした（文章題の「練習画面で自分で解いてみる」からは今までどおり使える）。実践プリントの型を追加（サンプル3回目）：(a−b²)÷c−d²、−20−(−22)−9、{分数＋累乗}÷(−n)、小数より小さい整数、a正b負の性質、気温の差、分数×かっこ（1文字）、1.5x−(2x−1)/3、a²−9/a、数量の関係を等式で表す、分数係数の1次方程式、反比例の変域、傾きと1点から直線の式、数の選び方の確率、(2ab)³÷(−a²b)、分数の等式変形、√a〜√b の整数の個数、○×（循環小数・無理数）、半径が分数の球・おうぎ形の中心角・円柱の体積・半円のまわり。分数が小さく表示されないように、すべての数式を \displaystyle で表示（アプリ・プリント・小テスト・解答・LaTeX）。プリントの「問題の文字」を 小さめ／ふつう／大きめ から選べるように（くわしい設定。解答・解説の大きさは変えない）。プリント（計算）の「＝の点線」を あり／なし で選べるように（くわしい設定）。プリントの設定画面を整理：1 何を作る？ → 2 単元（学年）→ 3 種類 の手順式に。問題数・解答・文字の指定・文字の形は「くわしい設定」に折りたたみ。作りなおす・PDF・印刷のボタンは画面の下に固定。目安時間はプリントに印刷せず画面にだけ表示。実践・文章題の解答解説を1段組みに（文が折れないように）。実践プリント：問題数（5・10・15・20）を選べるように（入試形式・種類ごと両方）。1枚目に目安時間（1問ごとの目安の合計を5分単位）を表示。PDF を画像ではなく文字のまま保存するように変更（ブラウザの印刷の「PDF に保存」を使う。拡大してもくっきり）。プリント・小テスト共通。プリントに「PDF を保存」ボタンを追加（計算・文章題・実践の全分野。ファイル名はプリントのタイトル＋日付）。実践プリント：「中かっこ・累乗をふくむ計算」（例：−8×{−0.8÷(−4/5)²−(−3²)}）を4通りの形にふやし、種類ごと（中1 → 正負の数）でも選べるように。入試形式の中2問2にもまざる。実践プリントに「単項式の乗除（累乗・分数）」を追加（例：(−2xy²)³×5/6 x²y÷(−4/3 xy³)²）。入試形式の中2・中3にもまざる。実践プリントに「出し方：問題の種類ごと（10問）」を追加（学年 → 単元 → 種類）。サンプルから新しい型を追加：表と平均点から連立方程式、代表値（最頻値・中央値・範囲）、グラフと軸の交点、因数分解を使った式の値（x=3√2−4 など）、単項式のわり算をしてからの式の値、素数の確率、四角錐の高さ、(2x−5y)(3x+4y) の展開、−2y(2x−1)² の因数分解、√96−9√6、a²b×(−ab)³、反比例の比例定数。プリントに分野「実践（入試形式）」を追加：中1・中2・中3 を選ぶと、その学年までの内容から入試の小問集合と同じ並びで 問1〜問10 を自動作成（正負の数・分数の計算、文字式、方程式、連立方程式、等式変形、比例・反比例、1次関数、確率、展開・因数分解、平方根、2次方程式、関数 y=ax²、図形の計量）。解答は答えと短い解説。プリントの見出しを、タイトルの行と名前の行に分けた（タイトルが長いと名前欄がはみ出していたのを修正）。文字の指定「自分で置く」：「方程式をつくりなさい」の小問をやめ、求める問い（例：それぞれ何個買いましたか）を問題文の最後に入れる形に。文章題のプリント・小テスト：大問の番号を「問1」「問2」に（小問 (1)(2) と区別）。「文字の指定」を追加：問題に書く（やさしい）／自分で置く（むずかしい：何を x、y にするかも自分で決める）。文章題：問題文を画面の上に固定表示（ステップ1はその問題文の中の数をタップ）。タップできる場所の点線をなくした。文章題の学習ページを、各ステップで学習者が答える形に（数をタップ・求めるものを選ぶ・文字の決め方を選ぶ・表の空らんをうめる・式を選ぶ・答えを入力・最後の問いに答える）。文章題（大問）を追加：「文章題」タブで思考フロー（読む→求めるもの→文字→表→式を選ぶ→解く→確かめる）にそって学習。プリント（分野「文章題」）と小テスト（文章題（大問））にも対応。A＝B＝C の形は点線なしで表示。長い式（中かっこなど）が折り返さないように、文字の大きさと「＝」の位置を自動で調整。プリントを「単元 → 種類（やさしい順）」の選び方に整理。どの単元でも分数・小数・中かっこを選べるように。連立方程式に「比例式をふくむ」「A＝B＝C の形」を追加。小テストに1次不等式と新しい種類を追加。プリントもページ番号をフッターに。';
 
 /* =========================================================
    有理数
@@ -2232,7 +2245,7 @@ for (const [name, c] of Object.entries(SETTINGS)) {
    ========================================================= */
 // 問題の文字の大きさ（3段階）。解答・解説の大きさは変えない
 const FSCALE = { s: 0.88, m: 1, l: 1.15 };
-const PR = { field: 'calc', unit: 'eq', kind: 'basic', method: 'kasan', count: 6, ans: 'on', axis: 'on', fsize: 'm', wvar: 'given', grade: '3', emode: 'mix', etype: '', ecount: 10, items: [], breaks: new Set() };
+const PR = { field: 'calc', unit: 'eq', kind: 'basic', method: 'kasan', count: 6, ans: 'on', axis: 'off', fsize: 'm', wvar: 'given', grade: '3', emode: 'mix', etype: '', ecount: 10, sp: 'on', items: [], breaks: new Set() };
 function prSeg(id, key, after){
   $(id).addEventListener('click', e => {
     const b = e.target.closest('button[data-v]');
@@ -2272,16 +2285,17 @@ function buildKindButtons(){
   // 手順の見出し：実践は「学年と出し方」。入試の並びのときは種類を選ばないので 3 をかくす
   $('pStep2Label').textContent = exam ? '学年と出し方を選ぶ' : '単元を選ぶ';
   $('pStep3').style.display = exam && PR.emode === 'mix' ? 'none' : '';
-  if (exam) { $('pAxisWrap').style.display = 'none'; $('pMethodWrap').style.display = 'none'; $('pVarWrap').style.display = 'none'; buildExamTypes(); return; }
+  if (exam) { $('pAxisWrap').style.display = 'none'; $('pMethodWrap').style.display = 'none'; $('pVarWrap').style.display = 'none'; $('pSpWrap').style.display = 'none'; buildExamTypes(); return; }
   const word = PR.field === 'word';
   // 文章題は 1次方程式・比例式・連立方程式のみ
-  if (word && PR.unit === 'ineq') PR.unit = 'eq';
-  $('pUnit').querySelectorAll('button').forEach(x => { x.style.display = word && x.dataset.v === 'ineq' ? 'none' : ''; x.classList.toggle('on', x.dataset.v === PR.unit); });
+  if (word && ['ineq', 'sineq'].includes(PR.unit)) PR.unit = 'eq';
+  $('pUnit').querySelectorAll('button').forEach(x => { x.style.display = word && ['ineq', 'sineq'].includes(x.dataset.v) ? 'none' : ''; x.classList.toggle('on', x.dataset.v === PR.unit); });
   const kinds = (word ? WORD : KINDS)[PR.unit].concat([['mix', 'ミックス']]);
   if (!kinds.some(k => k[0] === PR.kind)) PR.kind = kinds[0][0];
   $('pKind').innerHTML = kinds.map(([v, n]) => `<button data-v="${v}"${v === PR.kind ? ' class="on"' : ''}>${n}</button>`).join('');
   $('pMethodWrap').style.display = !word && PR.unit === 'sys' ? '' : 'none';
   $('pVarWrap').style.display = word ? '' : 'none';
+  $('pSpWrap').style.display = !word && PR.unit === 'sineq' ? '' : 'none';
   $('pAxisWrap').style.display = PR.field === 'calc' ? '' : 'none';
   // 問題数：文章題（大問）は1枚に2問なので 2・4・6、計算は 4・6・8・10
   const counts = word ? [2, 4, 6] : [4, 6, 8, 10];
@@ -2306,6 +2320,13 @@ function fitSheetLines(box){
     const eqs = [...b.querySelectorAll('.sh-eq')];
     if (!eqs.length) return;
     eqs.forEach(e => { e.style.fontSize = ''; e.style.gridTemplateColumns = ''; });
+    // 点線なし（左にそろえる）：はみ出すときだけ文字を小さくする
+    if (box.classList.contains('noax')) {
+      const need = Math.max(...eqs.map(e => [...e.children].reduce((t, c) => t + c.getBoundingClientRect().width, 0) + 6));
+      const f = Math.min(1, (eqs[0].clientWidth - 4) / need);
+      if (f < 1) eqs.forEach(e => { e.style.fontSize = (BASE * f).toFixed(2) + 'pt'; });
+      return;
+    }
     const w = el => { const k = el.querySelector('.katex'); return k ? k.getBoundingClientRect().width : 0; };
     const inner = eqs[0].getBoundingClientRect().width, mw = 9 * MM;
     const maxL = Math.max(...eqs.map(e => w(e.querySelector('.l')))), maxR = Math.max(...eqs.map(e => w(e.querySelector('.r'))));
@@ -2445,25 +2466,25 @@ function renderSheet(){
   if (PR.field !== 'exam') $('pStatus').textContent = '';
   if (PR.field === 'word') return renderWordSheet();
   if (PR.field === 'exam') return renderExamSheet();
-  const isSys = PR.unit === 'sys';
+  const isSys = PR.unit === 'sys', two = isSys || PR.unit === 'sineq'; // 2本の式（｛ でまとめる）
   const kindName = PR.kind === 'mix' ? 'ミックス' : KINDS[PR.unit].find(k => k[0] === PR.kind)[1];
   // 1枚に入れる問題数：方程式・比例式は6問（3段）、連立方程式は4問（2段）まで。
   // それより多いときは、書くスペースを小さくせずに2枚目へ続ける
-  const perPage = isSys ? 4 : 6;
+  const perPage = two ? 4 : 6;
   const rows = PR.items.length <= perPage ? Math.ceil(PR.items.length / 2) : perPage / 2;
   const h = Math.floor(234 / rows); // 見出し2行ぶんを引いた高さ（ページ番号に重ならない）
   const head = t => `<div class="sh-title"><h2>${t}</h2><div class="sh-name">　月　日　　　年　　組　　番　名前 <span class="uline"></span></div></div>`;
   const es = PR.items;
   const title = `途中式プリント　${UNIT_NAME[PR.unit]}（${kindName}${isSys ? '・' + (PR.method === 'kasan' ? '加減法' : '代入法') : ''}）`;
-  const inst = { eq: '次の方程式を解きなさい。', prop: '次の比例式で、x の値を求めなさい。', sys: '次の連立方程式を解きなさい。', ineq: '次の不等式を解きなさい。' }[PR.unit];
+  const inst = { eq: '次の方程式を解きなさい。', prop: '次の比例式で、x の値を求めなさい。', sys: '次の連立方程式を解きなさい。', ineq: '次の不等式を解きなさい。', sineq: '次の連立不等式を解きなさい。' }[PR.unit];
   // A＝B＝C の形は「＝」が2つあってそろえる位置がないので、点線を入れずに左から1行で書く
   const box = (p, i) => p.kind === 'abc'
     ? `<div class="sh-box noaxis" style="height:${h}mm"><div class="sh-no">(${i + 1})</div><div class="sh-free">${K(p.tex)}</div></div>`
-    : `<div class="sh-box${isSys ? ' sys' : ''}" style="height:${h}mm"><div class="sh-no">(${i + 1})</div>${probLinesHTML(p)}</div>`;
+    : `<div class="sh-box${two ? ' sys' : ''}" style="height:${h}mm"><div class="sh-no">(${i + 1})</div>${probLinesHTML(p)}</div>`;
   const pages = [];
   for (let k = 0; k < es.length; k += perPage) pages.push(es.slice(k, k + perPage));
   const html = pages.map((pg, k) => `<div class="sheet qzp">${head(title)}
-    ${k ? '' : `<p class="sh-inst">${inst}${PR.axis === 'on' ? '途中式は「＝」をたての点線にそろえて、1行ずつ書きましょう。' : '途中式は「＝」の位置をそろえて、1行ずつ書きましょう。'}</p>`}
+    ${k ? '' : `<p class="sh-inst">${inst}${(sym => PR.axis === 'on' ? `途中式は「${sym}」をたての点線にそろえて、1行ずつ書きましょう。` : `途中式は「${sym}」の位置をそろえて、1行ずつ書きましょう。`)(['ineq', 'sineq'].includes(PR.unit) ? '不等号' : '＝')}</p>`}
     <div class="sh-grid">${pg.map((p, j) => box(p, k * perPage + j)).join('')}</div></div>`).join('');
   $('sheets').innerHTML = html;
   if (PR.ans === 'on') {
@@ -2541,6 +2562,7 @@ prSeg('pAns', 'ans', renderSheet);
 prSeg('pAxis', 'axis', renderSheet);
 prSeg('pFsize', 'fsize', renderSheet);
 prSeg('pVar', 'wvar', renderSheet);
+prSeg('pSp', 'sp', makeSheet);
 prSeg('pGrade', 'grade', () => { buildKindButtons(); makeSheet(); });
 prSeg('pECount', 'ecount', makeSheet);
 prSeg('pEMode', 'emode', () => { buildKindButtons(); makeSheet(); });
@@ -2661,7 +2683,7 @@ function clearSteps(L, R, dec, st, label){
 }
 
 /* ---------- 1次不等式 ---------- */
-const OPT = { '<': '<', '>': '>', le: '\\leqq', ge: '\\geqq' };
+const OPT = { '<': '<', '>': '>', le: '\\leqq ', ge: '\\geqq ' }; // 後ろの空白：すぐ x が続いても命令名とつながらないように
 const FLIP = { '<': '>', '>': '<', le: 'ge', ge: 'le' };
 const holds = (op, v) => op === '<' ? v < 0 : op === '>' ? v > 0 : op === 'le' ? v <= 0 : v >= 0;
 // 方程式と同じ手順。負の数でわるときだけ不等号の向きを変える
@@ -2669,7 +2691,8 @@ function ineqSteps(L, R, op, dec){
   const st = [];
   ({ L, R } = clearSteps(L, R, dec, st));
   st.forEach(s => { s.op = op; });
-  const push = note => st.push({ L: itemsT(L), R: itemsT(R), op, note });
+  // 0 の項が消えて見た目が前の行と同じになるときは、行を足さない
+  const push = note => { const row = { L: itemsT(L), R: itemsT(R), op, note }, last = st[st.length - 1]; if (!last || last.L !== row.L || last.R !== row.R || last.op !== row.op) st.push(row); };
   const Lv = L.filter(it => it.v), Lc = L.filter(it => !it.v), Rv = R.filter(it => it.v), Rc = R.filter(it => !it.v);
   if (Lc.length || Rv.length) {
     L = Lv.concat(Rv.map(it => ({ ...it, c: it.c.neg() })));
@@ -2686,11 +2709,13 @@ function ineqSteps(L, R, op, dec){
   }
   return { st, ans: { tex: `x${OPT[op]}${qtex(val)}` }, op, val };
 }
-function genIneq(kind){
+// fixB：答えの境目の値を決めておく／want：答えの向き（'lo'＝x＞…、'hi'＝x＜…）を決めておく（連立不等式で使う）
+const dirOf = op => op === '>' || op === 'ge' ? 'lo' : 'hi';
+function genIneq(kind, fixB, want){
   const kinds = ['basic', 'dist', 'frac', 'dec', 'brace'];
   for (let tries = 0; tries < 600; tries++) {
     const k = kind === 'mix' ? pick(kinds) : kind;
-    const b = nz(-8, 8), op = pick(['<', '>', 'le', 'ge']);
+    const b = fixB === undefined ? nz(-8, 8) : fixB, op = pick(['<', '>', 'le', 'ge']);
     let L, R, dec = false;
     if (k === 'basic') {
       const a = nz(-7, 7), c = nz(-7, 7), p = nz(-9, 9);
@@ -2726,10 +2751,112 @@ function genIneq(kind){
       const d = x => pval(padd(itemsP(L), pscale(itemsP(R), q(-1))), q(x));
       const ok = [b - 1, b + 1].every(x => holds(op, d(x).n / d(x).d) === holds(r.op, x - b));
       if (!ok || r.st.length > 9) continue;
-      return { kind: k, L, R, op, dec, steps: r.st, ans: r.ans, tex: `${itemsT(L, dec)}${OPT[op]}${itemsT(R, dec)}` };
+      if (want && dirOf(r.op) !== want) continue;
+      return { kind: k, L, R, op, dec, steps: r.st, ans: r.ans, fop: r.op, val: b, tex: `${itemsT(L, dec)}${OPT[op]}${itemsT(R, dec)}` };
     } catch (ex) { /* もう一度 */ }
   }
   return null;
+}
+
+/* ---------- 連立不等式 ---------- */
+// 2つの解（x＞a などの向きと値）の共通部分。type：'range'（a＜x＜b）／'one'（片方の解）／'point'（x＝a）／'none'（解なし）
+function sineqRes(s1, s2){
+  const lo = [s1, s2].filter(s => dirOf(s.op) === 'lo'), hi = [s1, s2].filter(s => dirOf(s.op) === 'hi');
+  const tight = (arr, better) => arr.reduce((a, b) => a.v === b.v ? (a.op.length === 1 ? a : b) : (better(b.v, a.v) ? b : a));
+  if (lo.length === 2) return { type: 'one', s: tight(lo, (x, y) => x > y) };
+  if (hi.length === 2) return { type: 'one', s: tight(hi, (x, y) => x < y) };
+  const [l, h] = [lo[0], hi[0]];
+  if (l.v < h.v) return { type: 'range', l, h };
+  if (l.v === h.v && l.op === 'ge' && h.op === 'le') return { type: 'point', v: l.v };
+  return { type: 'none' };
+}
+function sineqAnsTex(res){
+  if (res.type === 'none') return '\\text{解なし}';
+  if (res.type === 'point') return `x=${res.v}`;
+  if (res.type === 'one') return `x${OPT[res.s.op]}${res.s.v}`;
+  return `${res.l.v}${res.l.op === 'ge' ? '\\leqq ' : '<'}x${OPT[res.h.op]}${res.h.v}`;
+}
+// 種類：basic 基本／dist かっこ／frac 分数／dec 小数／abc A＜B＜C の形／special 特別な答え（解なし・x＝a・片方の解）
+function genSineq(kind){
+  for (let tries = 0; tries < 300; tries++) {
+    let parts, res, tex, lines, abc = null;
+    if (kind === 'abc') {
+      // p＜x＜q になるように、まん中の式 ax＋c と両はしの数を決める
+      const a = pick([2, 3, 4, 5, -2, -3, 1]), c = nz(-7, 7), p = ri(-6, 3), w = ri(1, 6), qv = p + w;
+      const o1 = pick(['<', 'le']), o2 = pick(['<', 'le']);
+      const e1 = a * p + c, e2 = a * qv + c, lowC = Math.min(e1, e2), highC = Math.max(e1, e2);
+      const M = [iX(a), iN(c)];
+      const mk = (op, C) => { const r = ineqSteps(M, [iN(C)], op, false); return { L: M, R: [iN(C)], op, dec: false, steps: r.st, fop: r.op, val: r.val.n / r.val.d }; };
+      parts = [mk(FLIP[o1], lowC), mk(o2, highC)];
+      if (!parts.every(s => Number.isInteger(s.val))) continue;
+      tex = `${lowC}${OPT[o1]}${itemsT(M)}${OPT[o2]}${highC}`;
+      lines = [{ l: String(lowC), m: OPT[o1], r: `${itemsT(M)}${OPT[o2]}${highC}` }];
+      abc = [`${lowC}${OPT[o1]}${itemsT(M)}`, `${itemsT(M)}${OPT[o2]}${highC}`];
+    } else {
+      const sub = { basic: ['basic', 'basic'], dist: ['dist', pick(['basic', 'dist'])], frac: ['frac', pick(['basic', 'dist'])], dec: ['dec', pick(['basic', 'dec'])], special: [pick(['basic', 'dist']), pick(['basic', 'dist'])] }[kind];
+      let b1, b2, w1, w2;
+      if (kind === 'special') {
+        const t = pick(['none', 'point', 'one']);
+        if (t === 'one') { w1 = w2 = pick(['lo', 'hi']); b1 = nz(-7, 7); b2 = nz(-7, 7); if (b1 === b2) continue; }
+        else { w1 = 'lo'; w2 = 'hi'; b1 = nz(-6, 6); b2 = t === 'point' ? b1 : b1 - ri(0, 4); }
+      } else { w1 = 'lo'; w2 = 'hi'; b1 = ri(-7, 4); b2 = b1 + ri(1, 7); if (!b1 || !b2) continue; }
+      const g1 = genIneq(sub[0], b1, w1), g2 = genIneq(sub[1], b2, w2);
+      if (!g1 || !g2) continue;
+      parts = Math.random() < .5 ? [g1, g2] : [g2, g1];
+      lines = parts.map(s => ({ l: itemsT(s.L, s.dec), m: OPT[s.op], r: itemsT(s.R, s.dec) }));
+      tex = casesT(parts.map(s => `${itemsT(s.L, s.dec)}${OPT[s.op]}${itemsT(s.R, s.dec)}`));
+    }
+    res = sineqRes({ v: parts[0].val, op: parts[0].fop }, { v: parts[1].val, op: parts[1].fop });
+    if (kind === 'special' ? res.type === 'range' : res.type !== 'range') continue;
+    // 途中式：①、② をそれぞれ解いて、数直線で共通部分を見る
+    const st = [];
+    parts.forEach((s, i) => {
+      st.push({ label: '①②'[i], L: itemsT(s.L, s.dec), R: itemsT(s.R, s.dec), op: s.op, note: abc ? (i ? 'まん中と右を取り出す' : 'まん中と左を取り出す') : '' });
+      s.steps.forEach(x => st.push({ ...x, label: '' }));
+    });
+    st.push({ nl: { s: parts.map(s => ({ v: s.val, op: s.fop })), res } });
+    // 検算：答えの範囲の中・外の整数で、もとの2つの不等式を確かめる
+    const ok = [...Array(41)].every((_, j) => {
+      const x = j - 20;
+      const both = parts.every(s => holds(s.op, (d => d.n / d.d)(pval(padd(itemsP(s.L), pscale(itemsP(s.R), q(-1))), q(x)))));
+      const inA = res.type === 'none' ? false : res.type === 'point' ? x === res.v : res.type === 'one' ? holds(res.s.op, x - res.s.v) : holds(FLIP[res.l.op], res.l.v - x) && holds(res.h.op, x - res.h.v);
+      return both === inA;
+    });
+    if (!ok) continue;
+    return { unit: 'sineq', kind, tex, lines, steps: st, ans: { tex: sineqAnsTex(res) }, res };
+  }
+  return null;
+}
+// 解答の数直線（SVG）。端をふくむ ●、ふくまない ○、共通部分に斜線
+let nlId = 0;
+function nlSVG(nl){
+  const vs = nl.s.map(s => s.v), lo = Math.min(...vs), hi = Math.max(...vs);
+  const pos = v => lo === hi ? 120 : 60 + (v - lo) / (hi - lo) * 120;
+  const id = 'nlh' + (++nlId), AX = 46;
+  const rays = nl.s.map((s, i) => { const x = pos(s.v), y = 30 - i * 12, end = dirOf(s.op) === 'lo' ? 228 : 12; return `<path d="M${x} ${AX}V${y}H${end}" fill="none" stroke="#111" stroke-width="1.4"/>`; }).join('');
+  const dots = nl.s.map(s => `<circle cx="${pos(s.v)}" cy="${AX}" r="3.6" fill="${s.op.length > 1 ? '#111' : '#fff'}" stroke="#111" stroke-width="1.3"/>`).join('');
+  const r = nl.res;
+  let band = '';
+  const rect = (x1, x2) => `<rect x="${Math.min(x1, x2)}" y="8" width="${Math.abs(x2 - x1)}" height="${AX - 8}" fill="url(#${id})"/>`;
+  if (r.type === 'range') band = rect(pos(r.l.v), pos(r.h.v));
+  else if (r.type === 'one') band = rect(pos(r.s.v), dirOf(r.s.op) === 'lo' ? 228 : 12);
+  else if (r.type === 'point') band = `<path d="M${pos(r.v)} 6V${AX}" stroke="#111" stroke-width="1" stroke-dasharray="2 2"/>`;
+  const labs = [...new Set(vs)].map(v => `<text x="${pos(v)}" y="64" font-size="13" text-anchor="middle" fill="#111">${v < 0 ? '−' + -v : v}</text>`).join('');
+  return `<svg class="nlfig" viewBox="0 0 240 68" aria-label="数直線"><defs><pattern id="${id}" width="5" height="5" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><path d="M0 0V5" stroke="#777" stroke-width="1.2"/></pattern></defs>${band}<path d="M6 ${AX}H232" stroke="#111" stroke-width="1"/><path d="M228 ${AX - 3}L234 ${AX}L228 ${AX + 3}" fill="none" stroke="#111" stroke-width="1"/>${rays}${dots}${labs}</svg>`;
+}
+// LaTeX（TikZ）の数直線
+function nlTikz(nl){
+  const vs = nl.s.map(s => s.v), lo = Math.min(...vs), hi = Math.max(...vs);
+  const pos = v => (lo === hi ? 3 : 1.5 + (v - lo) / (hi - lo) * 3).toFixed(2);
+  const r = nl.res;
+  let band = '';
+  if (r.type === 'range') band = `\\fill[gray!25] (${pos(r.l.v)},0) rectangle (${pos(r.h.v)},1);`;
+  else if (r.type === 'one') band = `\\fill[gray!25] (${pos(r.s.v)},0) rectangle (${dirOf(r.s.op) === 'lo' ? 5.8 : 0.2},1);`;
+  else if (r.type === 'point') band = `\\draw[dashed] (${pos(r.v)},0) -- (${pos(r.v)},1.1);`;
+  const rays = nl.s.map((s, i) => `\\draw[thick] (${pos(s.v)},0) -- (${pos(s.v)},${(0.45 + i * 0.3).toFixed(2)}) -- (${dirOf(s.op) === 'lo' ? 5.8 : 0.2},${(0.45 + i * 0.3).toFixed(2)});`).join('\n');
+  const dots = nl.s.map(s => `\\filldraw[fill=${s.op.length > 1 ? 'black' : 'white'}] (${pos(s.v)},0) circle (2pt);`).join('\n');
+  const labs = [...new Set(vs)].map(v => `\\node[below] at (${pos(v)},0) {$${v}$};`).join('\n');
+  return `\\begin{center}\\begin{tikzpicture}\n${band}\n\\draw[->] (0,0) -- (6,0);\n${rays}\n${dots}\n${labs}\n\\end{tikzpicture}\\end{center}`;
 }
 // 1つの文字の方程式を解く（移項 → 整理 → わる）。値を返す
 function linSteps(L, R, dec, v, st, label){
@@ -2972,14 +3099,16 @@ const KINDS = {
   eq: [['basic', '基本'], ['dist', '分配法則'], ['order', '計算の順序'], ['frac', '分数'], ['dec', '小数'], ['brace', '中かっこ'], ['frac2', '分数（応用）']],
   prop: [['basic', '基本'], ['expr', '式をふくむ'], ['adv', '応用（分数・小数）']],
   sys: [['basic', '基本'], ['dist', '分配法則'], ['frac', '分数'], ['dec', '小数'], ['brace', '中かっこ'], ['ratio', '比例式をふくむ'], ['abc', 'A＝B＝C の形']],
-  ineq: [['basic', '基本'], ['dist', '分配法則'], ['frac', '分数'], ['dec', '小数'], ['brace', '中かっこ']]
+  ineq: [['basic', '基本'], ['dist', '分配法則'], ['frac', '分数'], ['dec', '小数'], ['brace', '中かっこ']],
+  sineq: [['basic', '基本'], ['dist', 'かっこ'], ['dec', '小数'], ['frac', '分数'], ['abc', 'A＜B＜C の形'], ['special', '特別な答え']]
 };
 // 小テストのレベルごとに使う種類
 const POOL = {
   eq: { 1: ['basic'], 2: ['dist', 'order', 'frac', 'dec'], 3: ['brace', 'frac2', 'dec'] },
   prop: { 1: ['basic'], 2: ['expr'], 3: ['adv'] },
   sys: { 1: ['basic'], 2: ['basic', 'dist'], 3: ['frac', 'dec', 'brace', 'ratio', 'abc'] },
-  ineq: { 1: ['basic'], 2: ['dist', 'frac', 'dec'], 3: ['brace', 'frac'] }
+  ineq: { 1: ['basic'], 2: ['dist', 'frac', 'dec'], 3: ['brace', 'frac'] },
+  sineq: { 1: ['basic'], 2: ['dist', 'dec', 'abc'], 3: ['frac', 'special'] }
 };
 const prodItem = (tex, val, sign = 1) => ({ p: 1, c: q(sign), tex, poly: P(Q0, q(sign * val)) });
 const stdEq = (a, b, c) => ({ L: [iX(a), iX(b, 'y')].filter(it => !it.c.isZero()), R: [iN(c)] });
@@ -3046,6 +3175,7 @@ function qzSysRatio(){
 }
 function makeKindProb(unit, kind){
   if (unit === 'ineq') return genIneq(kind);
+  if (unit === 'sineq') return genSineq(kind);
   if (unit === 'eq') return {
     basic: () => qzEq(1), dist: () => qzEq(2, pick([0, 1, 2])), order: qzOrder, frac: () => qzEq(2, pick([3, 4])),
     dec: () => (Math.random() < .5 ? qzEq(2, 5) : qzEq(3, 2)), brace: qzEqBrace, frac2: () => qzEq(3, pick([0, 1, 3]))
@@ -3058,12 +3188,15 @@ function makeKindProb(unit, kind){
 }
 // 問題を1つ作り、途中式をつけて答えを確かめる。method：連立の解き方（'kasan'／'dainyu'／省略でおまかせ）
 function genKind(unit, kind, method){
+  // 連立不等式のミックス：特別な答え（解なし・x＝a など）は「まぜる」のときだけ、少なめに出す
+  if (kind === 'mix' && unit === 'sineq') kind = PR.sp === 'on' && Math.random() < .15 ? 'special' : pick(KINDS.sineq.map(k => k[0]).filter(k => k !== 'special'));
   if (kind === 'mix') kind = pick(KINDS[unit].map(k => k[0]));
   for (let i = 0; i < 400; i++) {
     const p = makeKindProb(unit, kind);
     if (!p) continue;
     try {
       p.unit = unit; p.kind = kind;
+      if (unit === 'sineq') return p;
       if (unit === 'ineq') {
         p.lines = [{ l: itemsT(p.L, p.dec), m: OPT[p.op], r: itemsT(p.R, p.dec) }];
         return p;
@@ -3085,7 +3218,11 @@ function genKind(unit, kind, method){
   }
   return null;
 }
-const genQuizProb = (unit, lv) => Object.assign(genKind(unit, pick(POOL[unit][lv])) || {}, { level: lv });
+const genQuizProb = (unit, lv) => {
+  let pool = POOL[unit][lv];
+  if (unit === 'sineq' && QZ.sp === 'off') pool = pool.filter(k => k !== 'special');
+  return Object.assign(genKind(unit, pick(pool)) || {}, { level: lv });
+};
 
 /* =========================================================
    文章題（大問）
@@ -3668,8 +3805,8 @@ const wordAnswerBlock = (p, i, mode) => `<div class="qa wqa"><div class="qa-head
   <div class="wa wa-ans">${(f => f.ans.map((x, j) => qnum(f, j) + rich(x.a)).join('<br>'))(wordForm(p, mode))}</div>
   <div class="wa wa-chk">確かめ：${rich(p.check)}</div></div>`;
 const shuffle = a => { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
-const QZ = { units: ['eq'], level: 'mix', wvar: 'given', probs: [], breaks: new Set() };
-const UNIT_NAME = { eq: '1次方程式', prop: '比例式', sys: '連立方程式', ineq: '1次不等式', word: '文章題' };
+const QZ = { units: ['eq'], level: 'mix', wvar: 'given', sp: 'on', probs: [], breaks: new Set() };
+const UNIT_NAME = { eq: '1次方程式', prop: '比例式', sys: '連立方程式', ineq: '1次不等式', sineq: '連立不等式', word: '文章題' };
 const LEVEL_NAME = { 1: 'レベル1', 2: 'レベル2', 3: 'レベル3', mix: '段階的ミックス' };
 // 文章題をふくめるとき：計算と合わせるなら 計算8問＋大問2つ、文章題だけなら大問4つ
 function makeQuiz(){
@@ -3712,17 +3849,19 @@ const ansTex = a => a.tex ? a.tex : a.y !== undefined ? `(x,\\ y)=(${qtex(a.x)},
 function quizTitle(){ return `小テスト　${QZ.units.map(u => UNIT_NAME[u]).join('・')}（${LEVEL_NAME[QZ.level]}）`; }
 function quizInst(){
   const u = QZ.units;
-  if (u.length === 1) return { eq: '次の方程式を解きなさい。', prop: '次の比例式で、x の値を求めなさい。', sys: '次の連立方程式を解きなさい。', ineq: '次の不等式を解きなさい。', word: '次の問いに答えなさい。式や考え方も書きましょう。' }[u[0]];
+  if (u.length === 1) return { eq: '次の方程式を解きなさい。', prop: '次の比例式で、x の値を求めなさい。', sys: '次の連立方程式を解きなさい。', ineq: '次の不等式を解きなさい。', sineq: '次の連立不等式を解きなさい。', word: '次の問いに答えなさい。式や考え方も書きましょう。' }[u[0]];
   if (u.includes('word')) return '次の問題を解きなさい。文章題は式や考え方も書きましょう。';
   return '次の問題を解きなさい（比例式は x の値を求めなさい）。';
 }
 function stepsHTML(st){
-  return `<div class="qa-steps">${st.map(s => s.arr
+  return `<div class="qa-steps">${st.map(s => s.nl
+    ? `<span class="lb"></span><span class="arr">${nlSVG(s.nl)}</span><span></span>`
+    : s.arr
     ? `<span class="lb">${esc(s.label || '')}</span><span class="arr">${K(s.arr)}</span><span></span>`
     : `<span class="lb">${esc(s.label || '')}</span><span class="l">${K(s.L)}</span><span class="m">${K(s.op ? OPT[s.op] : '=')}</span><span class="r">${K(s.R)}</span><span class="nt">${esc(s.note || '')}</span>`).join('')}</div>`;
 }
 // 1枚に入れる問題数：連立方程式だけなら4問（2段）、それ以外は6問（3段）。書くスペースを小さくしない
-const quizPerPage = () => { const c = QZ.units.filter(u => u !== 'word'); return c.length === 1 && c[0] === 'sys' ? 4 : 6; };
+const quizPerPage = () => { const c = QZ.units.filter(u => u !== 'word'); return c.length && c.every(u => u === 'sys' || u === 'sineq') ? 4 : 6; };
 function renderQuiz(){
   const total = QZ.probs.length;
   const head = (t, first) => `<div class="qz-head"><h2>${t}</h2><div class="qz-info">${first ? '<span>　　月　　日</span>' : ''}<span>　　年　　組　　番</span><span class="qz-nm">氏名 <span class="uline"></span></span>${first ? `<span class="qz-score">得点<b></b>／${total}</span>` : ''}</div></div>`;
@@ -3803,7 +3942,8 @@ ${col(pg.slice(half))}
     const out = []; let buf = [];
     const flush = () => { if (buf.length) { out.push(`\\begin{align*}\n${buf.join('\\\\\n')}\n\\end{align*}`); buf = []; } };
     st.forEach(s => {
-      if (s.arr) { flush(); out.push(`\\[${s.label ? `\\text{${tx(s.label)}}\\quad ` : ''}${s.arr}\\]`); }
+      if (s.nl) { flush(); out.push(nlTikz(s.nl)); }
+      else if (s.arr) { flush(); out.push(`\\[${s.label ? `\\text{${tx(s.label)}}\\quad ` : ''}${s.arr}\\]`); }
       else buf.push(`${s.label ? `\\text{${tx(s.label)}}\\quad ` : ''}${s.L} &${s.op ? OPT[s.op] : '='} ${s.R}${s.note ? ` &&\\text{${tx(s.note)}}` : ''}`);
     });
     flush();
@@ -3834,6 +3974,7 @@ ${stepsTex(p.steps)}
 \\usepackage[margin=14mm]{geometry}
 \\usepackage{amsmath,amssymb}
 \\usepackage{multicol}
+\\usepackage{tikz}
 \\pagestyle{plain}
 \\setlength{\\parindent}{0pt}
 \\begin{document}
@@ -3895,9 +4036,11 @@ function readQuizForm(){
   QZ.level = (document.querySelector('input[name="qlv"]:checked') || {}).value || 'mix';
   QZ.wvar = (document.querySelector('input[name="qvar"]:checked') || {}).value || 'given';
   $('qVarRow').style.display = QZ.units.includes('word') ? '' : 'none';
+  QZ.sp = (document.querySelector('input[name="qsp"]:checked') || {}).value || 'on';
+  $('qSpRow').style.display = QZ.units.includes('sineq') ? '' : 'none';
 }
 document.querySelectorAll('input[name="qvar"]').forEach(inp => inp.addEventListener('change', () => { readQuizForm(); if (QZ.probs.length) renderQuiz(); }));
-document.querySelectorAll('input[name="qunit"], input[name="qlv"]').forEach(inp => inp.addEventListener('change', () => {
+document.querySelectorAll('input[name="qunit"], input[name="qlv"], input[name="qsp"]').forEach(inp => inp.addEventListener('change', () => {
   readQuizForm();
   if (!QZ.units.length) { quizStatus('単元を1つ以上選んでください'); return; }
   quizStatus('');
